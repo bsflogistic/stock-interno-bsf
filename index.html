@@ -104,9 +104,19 @@ button:disabled {
   color: white;
 }
 
+.naranja {
+  background: #f29900;
+  color: white;
+}
+
 .gris {
   background: #e8eaed;
   color: #202124;
+}
+
+.oscuro {
+  background: #202124;
+  color: white;
 }
 
 .oculto {
@@ -116,6 +126,10 @@ button:disabled {
 .pedido-activo {
   background: #e6f4ea;
   border: 1px solid #34a853;
+}
+
+.admin {
+  border: 2px solid #202124;
 }
 
 .producto {
@@ -205,6 +219,20 @@ button:disabled {
 .cargando {
   text-align: center;
   font-weight: bold;
+}
+
+.separador {
+  margin: 18px 0;
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+.resultado-admin {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  white-space: pre-line;
 }
 
 </style>
@@ -341,8 +369,6 @@ button:disabled {
     </div>
 
 
-    <!-- ESCANEO -->
-
     <div
       id="tarjetaEscaneo"
       class="tarjeta">
@@ -389,8 +415,6 @@ button:disabled {
     </div>
 
 
-    <!-- CARGANDO -->
-
     <div
       id="cargandoCaja"
       class="tarjeta cargando oculto">
@@ -399,8 +423,6 @@ button:disabled {
 
     </div>
 
-
-    <!-- CAJA -->
 
     <div
       id="tarjetaCaja"
@@ -467,8 +489,6 @@ button:disabled {
     </div>
 
 
-    <!-- FINALIZAR -->
-
     <div class="tarjeta">
 
       <button
@@ -482,11 +502,110 @@ button:disabled {
 
   </div>
 
+
+  <!-- ===================================
+       ADMINISTRADOR
+       =================================== -->
+
+  <div
+    id="tarjetaAdmin"
+    class="tarjeta admin">
+
+    <h2>
+      🔐 Administrador
+    </h2>
+
+    <p>
+      Herramientas de anulación.
+    </p>
+
+
+    <label>
+      PIN administrador
+    </label>
+
+    <input
+      id="pinAdmin"
+      type="password"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="PIN administrador"
+    >
+
+
+    <label>
+      Usuario que anula
+    </label>
+
+    <input
+      id="usuarioAnulacion"
+      type="text"
+      placeholder="Ej: Joni"
+    >
+
+
+    <hr class="separador">
+
+
+    <h3>
+      Anular movimiento
+    </h3>
+
+    <label>
+      ID movimiento
+    </label>
+
+    <input
+      id="idMovimientoAnular"
+      type="text"
+      placeholder="Ej: MOV-000001"
+    >
+
+    <button
+      id="btnAnularMovimiento"
+      class="naranja"
+      onclick="pedirAnularMovimiento()">
+      ANULAR MOVIMIENTO
+    </button>
+
+
+    <hr class="separador">
+
+
+    <h3>
+      Anular pedido completo
+    </h3>
+
+    <label>
+      Número de pedido
+    </label>
+
+    <input
+      id="pedidoAnular"
+      type="text"
+      placeholder="Ej: 6475"
+    >
+
+    <button
+      id="btnAnularPedido"
+      class="rojo"
+      onclick="pedirAnularPedidoCompleto()">
+      ANULAR PEDIDO COMPLETO
+    </button>
+
+
+    <div
+      id="resultadoAdmin"
+      class="resultado-admin oculto">
+    </div>
+
+  </div>
+
 </div>
 
 
 <!-- ===================================
-     MODAL CONFIRMAR DESCUENTO
+     MODAL DESCUENTO
      =================================== -->
 
 <div
@@ -568,30 +687,17 @@ const URL_APPS_SCRIPT =
   'https://script.google.com/macros/s/AKfycbzAAJJJhxkTUt99JFfadXQT2IAKmOPS4PKRudeotALBeIAMn60uSktlcty9w9kJv06f/exec';
 
 
-let operacion =
-  null;
-
-let cajaActual =
-  null;
-
-let cantidadPendiente =
-  0;
-
-let lector =
-  null;
-
-let scannerActivo =
-  false;
-
-let consultaEnCurso =
-  false;
-
-let operacionEnCurso =
-  false;
+let operacion = null;
+let cajaActual = null;
+let cantidadPendiente = 0;
+let lector = null;
+let scannerActivo = false;
+let consultaEnCurso = false;
+let operacionEnCurso = false;
 
 
 /*******************************************************
- * LLAMAR AL WORKER
+ * WORKER
  *******************************************************/
 
 async function llamarWorker(
@@ -602,22 +708,17 @@ async function llamarWorker(
     await fetch(
       URL_WORKER,
       {
-
-        method:
-          'POST',
+        method: 'POST',
 
         headers: {
-
           'Content-Type':
             'application/json'
-
         },
 
         body:
           JSON.stringify(
             datos
           )
-
       }
     );
 
@@ -634,25 +735,6 @@ async function llamarWorker(
 
     throw new Error(
       'El servidor respondió con un formato inválido.'
-    );
-
-  }
-
-
-  /*
-   * Aunque HTTP sea 400/500,
-   * queremos mostrar el mensaje
-   * real enviado por nuestro backend.
-   */
-  if (
-    !respuesta.ok &&
-    !resultado.error
-  ) {
-
-    throw new Error(
-      'Error del servidor (' +
-      respuesta.status +
-      ').'
     );
 
   }
@@ -675,44 +757,34 @@ async function iniciarPedido() {
   if (
     operacionEnCurso
   ) {
-
     return;
-
   }
 
 
   const pin =
     document
-      .getElementById(
-        'pin'
-      )
+      .getElementById('pin')
       .value
       .trim();
 
 
   const usuario =
     document
-      .getElementById(
-        'usuario'
-      )
+      .getElementById('usuario')
       .value
       .trim();
 
 
   const pedido =
     document
-      .getElementById(
-        'pedido'
-      )
+      .getElementById('pedido')
       .value
       .trim();
 
 
   const cliente =
     document
-      .getElementById(
-        'cliente'
-      )
+      .getElementById('cliente')
       .value
       .trim();
 
@@ -803,11 +875,6 @@ async function iniciarPedido() {
       estado:
         resultado.estado,
 
-      /*
-       * El PIN se mantiene únicamente
-       * en memoria mientras el pedido
-       * esté abierto.
-       */
       pin:
         pin
 
@@ -815,55 +882,39 @@ async function iniciarPedido() {
 
 
     document
-      .getElementById(
-        'pedidoActivo'
-      )
+      .getElementById('pedidoActivo')
       .textContent =
         operacion.pedido;
 
 
     document
-      .getElementById(
-        'clienteActivo'
-      )
+      .getElementById('clienteActivo')
       .textContent =
         operacion.cliente;
 
 
     document
-      .getElementById(
-        'usuarioActivo'
-      )
+      .getElementById('usuarioActivo')
       .textContent =
         operacion.usuario;
 
 
     document
-      .getElementById(
-        'operacionActiva'
-      )
+      .getElementById('operacionActiva')
       .textContent =
         operacion.idOperacion;
 
 
     document
-      .getElementById(
-        'pantallaInicio'
-      )
+      .getElementById('pantallaInicio')
       .classList
-      .add(
-        'oculto'
-      );
+      .add('oculto');
 
 
     document
-      .getElementById(
-        'pantallaPedido'
-      )
+      .getElementById('pantallaPedido')
       .classList
-      .remove(
-        'oculto'
-      );
+      .remove('oculto');
 
 
     mostrarOk(
@@ -898,16 +949,14 @@ async function iniciarPedido() {
 
 
 /*******************************************************
- * BUSCAR CAJA MANUALMENTE
+ * CONSULTAR CAJA
  *******************************************************/
 
 function buscarCajaManual() {
 
   const codigo =
     document
-      .getElementById(
-        'codigoManual'
-      )
+      .getElementById('codigoManual')
       .value
       .trim();
 
@@ -930,13 +979,6 @@ function buscarCajaManual() {
 }
 
 
-/*******************************************************
- * CONSULTAR CAJA
- *
- * Por ahora mantenemos la consulta GET/JSONP
- * que ya funcionaba correctamente.
- *******************************************************/
-
 function consultarCaja(
   codigo
 ) {
@@ -944,9 +986,7 @@ function consultarCaja(
   if (
     consultaEnCurso
   ) {
-
     return;
-
   }
 
 
@@ -958,23 +998,15 @@ function consultarCaja(
 
 
   document
-    .getElementById(
-      'tarjetaCaja'
-    )
+    .getElementById('tarjetaCaja')
     .classList
-    .add(
-      'oculto'
-    );
+    .add('oculto');
 
 
   document
-    .getElementById(
-      'cargandoCaja'
-    )
+    .getElementById('cargandoCaja')
     .classList
-    .remove(
-      'oculto'
-    );
+    .remove('oculto');
 
 
   llamarApiJsonp(
@@ -995,13 +1027,9 @@ function consultarCaja(
 
 
       document
-        .getElementById(
-          'cargandoCaja'
-        )
+        .getElementById('cargandoCaja')
         .classList
-        .add(
-          'oculto'
-        );
+        .add('oculto');
 
 
       if (
@@ -1036,13 +1064,9 @@ function consultarCaja(
 
 
       document
-        .getElementById(
-          'cargandoCaja'
-        )
+        .getElementById('cargandoCaja')
         .classList
-        .add(
-          'oculto'
-        );
+        .add('oculto');
 
 
       mostrarError(
@@ -1063,25 +1087,19 @@ function consultarCaja(
 function mostrarCaja() {
 
   document
-    .getElementById(
-      'productoCaja'
-    )
+    .getElementById('productoCaja')
     .textContent =
       cajaActual.producto;
 
 
   document
-    .getElementById(
-      'codigoCaja'
-    )
+    .getElementById('codigoCaja')
     .textContent =
       cajaActual.codigoCaja;
 
 
   document
-    .getElementById(
-      'stockCaja'
-    )
+    .getElementById('stockCaja')
     .textContent =
       cajaActual.cantidadActual;
 
@@ -1123,29 +1141,21 @@ function mostrarCaja() {
 
 
   document
-    .getElementById(
-      'cantidadDescontar'
-    )
+    .getElementById('cantidadDescontar')
     .value =
       '';
 
 
   document
-    .getElementById(
-      'codigoManual'
-    )
+    .getElementById('codigoManual')
     .value =
       '';
 
 
   document
-    .getElementById(
-      'tarjetaCaja'
-    )
+    .getElementById('tarjetaCaja')
     .classList
-    .remove(
-      'oculto'
-    );
+    .remove('oculto');
 
 }
 
@@ -1194,17 +1204,13 @@ function prepararDescuento() {
   const cantidad =
     Number(
       document
-        .getElementById(
-          'cantidadDescontar'
-        )
+        .getElementById('cantidadDescontar')
         .value
     );
 
 
   if (
-    !Number.isInteger(
-      cantidad
-    ) ||
+    !Number.isInteger(cantidad) ||
     cantidad <= 0
   ) {
 
@@ -1225,9 +1231,7 @@ function prepararDescuento() {
   ) {
 
     mostrarError(
-      'Stock insuficiente. La caja tiene ' +
-      cajaActual.cantidadActual +
-      ' packings.'
+      'Stock insuficiente.'
     );
 
     return;
@@ -1247,9 +1251,7 @@ function prepararDescuento() {
 
 
   document
-    .getElementById(
-      'modalCantidad'
-    )
+    .getElementById('modalCantidad')
     .textContent =
       cantidad +
       (
@@ -1260,51 +1262,39 @@ function prepararDescuento() {
 
 
   document
-    .getElementById(
-      'modalProducto'
-    )
+    .getElementById('modalProducto')
     .textContent =
       cajaActual.producto;
 
 
   document
-    .getElementById(
-      'modalCaja'
-    )
+    .getElementById('modalCaja')
     .textContent =
       cajaActual.codigoCaja;
 
 
   document
-    .getElementById(
-      'modalAntes'
-    )
+    .getElementById('modalAntes')
     .textContent =
       cajaActual.cantidadActual;
 
 
   document
-    .getElementById(
-      'modalDespues'
-    )
+    .getElementById('modalDespues')
     .textContent =
       despues;
 
 
   document
-    .getElementById(
-      'modalDescuento'
-    )
+    .getElementById('modalDescuento')
     .classList
-    .remove(
-      'oculto'
-    );
+    .remove('oculto');
 
 }
 
 
 /*******************************************************
- * EJECUTAR DESCUENTO
+ * DESCONTAR
  *******************************************************/
 
 async function ejecutarDescuento() {
@@ -1371,7 +1361,7 @@ async function ejecutarDescuento() {
 
       throw new Error(
         resultado.error ||
-        'No se pudo realizar el descuento.'
+        'No se pudo descontar.'
       );
 
     }
@@ -1385,17 +1375,10 @@ async function ejecutarDescuento() {
       resultado.producto +
       ': se descontaron ' +
       resultado.cantidadDescontada +
-      (
-        resultado.cantidadDescontada === 1
-          ? ' packing. '
-          : ' packings. '
-      ) +
-      'Stock ' +
+      ' packings. Stock ' +
       resultado.cantidadAntes +
       ' → ' +
       resultado.cantidadDespues +
-      '. Movimiento ' +
-      resultado.idMovimiento +
       '.'
     );
 
@@ -1430,66 +1413,7 @@ async function ejecutarDescuento() {
 
 
 /*******************************************************
- * MODAL
- *******************************************************/
-
-function cerrarModalDescuento() {
-
-  document
-    .getElementById(
-      'modalDescuento'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-}
-
-
-/*******************************************************
- * CAMBIAR / LIMPIAR CAJA
- *******************************************************/
-
-function cambiarCaja() {
-
-  limpiarCaja();
-
-}
-
-
-function limpiarCaja() {
-
-  cajaActual =
-    null;
-
-
-  cantidadPendiente =
-    0;
-
-
-  document
-    .getElementById(
-      'tarjetaCaja'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'cantidadDescontar'
-    )
-    .value =
-      '';
-
-}
-
-
-/*******************************************************
- * FINALIZAR PEDIDO
+ * FINALIZAR
  *******************************************************/
 
 async function pedirFinalizarPedido() {
@@ -1498,9 +1422,7 @@ async function pedirFinalizarPedido() {
     operacionEnCurso ||
     !operacion
   ) {
-
     return;
-
   }
 
 
@@ -1513,9 +1435,7 @@ async function pedirFinalizarPedido() {
 
 
   if (!confirmar) {
-
     return;
-
   }
 
 
@@ -1560,7 +1480,7 @@ async function pedirFinalizarPedido() {
 
       throw new Error(
         resultado.error ||
-        'No se pudo finalizar el pedido.'
+        'No se pudo finalizar.'
       );
 
     }
@@ -1582,49 +1502,31 @@ async function pedirFinalizarPedido() {
 
 
     document
-      .getElementById(
-        'pantallaPedido'
-      )
+      .getElementById('pantallaPedido')
       .classList
-      .add(
-        'oculto'
-      );
+      .add('oculto');
 
 
     document
-      .getElementById(
-        'pantallaInicio'
-      )
+      .getElementById('pantallaInicio')
       .classList
-      .remove(
-        'oculto'
-      );
+      .remove('oculto');
 
 
-    /*
-     * Conservamos el usuario para facilitar
-     * el siguiente pedido.
-     */
     document
-      .getElementById(
-        'pedido'
-      )
+      .getElementById('pedido')
       .value =
         '';
 
 
     document
-      .getElementById(
-        'cliente'
-      )
+      .getElementById('cliente')
       .value =
         '';
 
 
     document
-      .getElementById(
-        'pin'
-      )
+      .getElementById('pin')
       .value =
         '';
 
@@ -1661,6 +1563,428 @@ async function pedirFinalizarPedido() {
 
 
 /*******************************************************
+ * ADMIN - ANULAR MOVIMIENTO
+ *******************************************************/
+
+async function pedirAnularMovimiento() {
+
+  const pin =
+    document
+      .getElementById('pinAdmin')
+      .value
+      .trim();
+
+
+  const usuario =
+    document
+      .getElementById('usuarioAnulacion')
+      .value
+      .trim();
+
+
+  const movimiento =
+    document
+      .getElementById('idMovimientoAnular')
+      .value
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    !pin ||
+    !usuario ||
+    !movimiento
+  ) {
+
+    mostrarError(
+      'Completá PIN admin, usuario y movimiento.'
+    );
+
+    return;
+
+  }
+
+
+  const confirmar =
+    window.confirm(
+      '¿Estás seguro de que querés anular ' +
+      movimiento +
+      '?\n\nEl stock descontado será devuelto a la caja.'
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const boton =
+    document.getElementById(
+      'btnAnularMovimiento'
+    );
+
+
+  boton.disabled =
+    true;
+
+
+  boton.textContent =
+    'ANULANDO...';
+
+
+  try {
+
+    const resultado =
+      await llamarWorker({
+
+        accion:
+          'anularMovimiento',
+
+        pin:
+          pin,
+
+        idMovimiento:
+          movimiento,
+
+        usuarioAnulacion:
+          usuario
+
+      });
+
+
+    if (
+      !resultado.ok
+    ) {
+
+      throw new Error(
+        resultado.error ||
+        'No se pudo anular el movimiento.'
+      );
+
+    }
+
+
+    mostrarResultadoAdmin(
+      '✅ MOVIMIENTO ANULADO\n\n' +
+      'Movimiento: ' +
+      resultado.idMovimiento +
+      '\n' +
+      'Pedido: ' +
+      resultado.pedido +
+      '\n' +
+      'Producto: ' +
+      resultado.producto +
+      '\n' +
+      'Caja: ' +
+      resultado.codigoCaja +
+      '\n' +
+      'Cantidad devuelta: ' +
+      resultado.cantidadDevuelta +
+      '\n' +
+      'Stock: ' +
+      resultado.stockAntes +
+      ' → ' +
+      resultado.stockDespues
+    );
+
+
+    document
+      .getElementById('idMovimientoAnular')
+      .value =
+        '';
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    boton.disabled =
+      false;
+
+
+    boton.textContent =
+      'ANULAR MOVIMIENTO';
+
+  }
+
+}
+
+
+/*******************************************************
+ * ADMIN - ANULAR PEDIDO COMPLETO
+ *******************************************************/
+
+async function pedirAnularPedidoCompleto() {
+
+  const pin =
+    document
+      .getElementById('pinAdmin')
+      .value
+      .trim();
+
+
+  const usuario =
+    document
+      .getElementById('usuarioAnulacion')
+      .value
+      .trim();
+
+
+  const pedido =
+    document
+      .getElementById('pedidoAnular')
+      .value
+      .trim();
+
+
+  if (
+    !pin ||
+    !usuario ||
+    !pedido
+  ) {
+
+    mostrarError(
+      'Completá PIN admin, usuario y pedido.'
+    );
+
+    return;
+
+  }
+
+
+  const confirmar1 =
+    window.confirm(
+      '¿Querés anular COMPLETAMENTE el pedido ' +
+      pedido +
+      '?\n\nSe devolverá al stock todo lo descontado en todas sus operaciones.'
+    );
+
+
+  if (!confirmar1) {
+    return;
+  }
+
+
+  const confirmar2 =
+    window.confirm(
+      'CONFIRMACIÓN FINAL\n\nPedido: ' +
+      pedido +
+      '\n\nEsta acción anulará todas las operaciones y movimientos activos del pedido.\n\n¿Continuar?'
+    );
+
+
+  if (!confirmar2) {
+    return;
+  }
+
+
+  const boton =
+    document.getElementById(
+      'btnAnularPedido'
+    );
+
+
+  boton.disabled =
+    true;
+
+
+  boton.textContent =
+    'ANULANDO PEDIDO...';
+
+
+  try {
+
+    const resultado =
+      await llamarWorker({
+
+        accion:
+          'anularPedidoCompleto',
+
+        pin:
+          pin,
+
+        pedido:
+          pedido,
+
+        usuarioAnulacion:
+          usuario
+
+      });
+
+
+    if (
+      !resultado.ok
+    ) {
+
+      throw new Error(
+        resultado.error ||
+        'No se pudo anular el pedido.'
+      );
+
+    }
+
+
+    let detalleCajas =
+      '';
+
+
+    if (
+      Array.isArray(
+        resultado.cajasDevueltas
+      )
+    ) {
+
+      resultado.cajasDevueltas
+        .forEach(
+          function(caja) {
+
+            detalleCajas +=
+              '\n' +
+              caja.codigoCaja +
+              ' - ' +
+              caja.producto +
+              ': +' +
+              caja.cantidadDevuelta +
+              ' (' +
+              caja.stockAntes +
+              ' → ' +
+              caja.stockDespues +
+              ')';
+
+          }
+        );
+
+    }
+
+
+    mostrarResultadoAdmin(
+      '✅ PEDIDO ANULADO COMPLETAMENTE\n\n' +
+      'Pedido: ' +
+      resultado.pedido +
+      '\n' +
+      'Operaciones anuladas: ' +
+      resultado.cantidadOperaciones +
+      '\n' +
+      'Movimientos anulados: ' +
+      resultado.cantidadMovimientos +
+      '\n\n' +
+      'Stock devuelto:' +
+      detalleCajas
+    );
+
+
+    document
+      .getElementById('pedidoAnular')
+      .value =
+        '';
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    boton.disabled =
+      false;
+
+
+    boton.textContent =
+      'ANULAR PEDIDO COMPLETO';
+
+  }
+
+}
+
+
+/*******************************************************
+ * RESULTADO ADMIN
+ *******************************************************/
+
+function mostrarResultadoAdmin(
+  texto
+) {
+
+  const elemento =
+    document.getElementById(
+      'resultadoAdmin'
+    );
+
+
+  elemento.textContent =
+    texto;
+
+
+  elemento.classList.remove(
+    'oculto'
+  );
+
+
+  mostrarOk(
+    '✅ Operación administrativa realizada correctamente.'
+  );
+
+}
+
+
+/*******************************************************
+ * MODAL
+ *******************************************************/
+
+function cerrarModalDescuento() {
+
+  document
+    .getElementById('modalDescuento')
+    .classList
+    .add('oculto');
+
+}
+
+
+/*******************************************************
+ * LIMPIAR CAJA
+ *******************************************************/
+
+function cambiarCaja() {
+  limpiarCaja();
+}
+
+
+function limpiarCaja() {
+
+  cajaActual =
+    null;
+
+
+  cantidadPendiente =
+    0;
+
+
+  document
+    .getElementById('tarjetaCaja')
+    .classList
+    .add('oculto');
+
+
+  document
+    .getElementById('cantidadDescontar')
+    .value =
+      '';
+
+}
+
+
+/*******************************************************
  * SCANNER
  *******************************************************/
 
@@ -1672,9 +1996,7 @@ async function abrirScanner() {
   if (
     scannerActivo
   ) {
-
     return;
-
   }
 
 
@@ -1738,9 +2060,7 @@ async function abrirScanner() {
         if (
           !scannerActivo
         ) {
-
           return;
-
         }
 
 
@@ -1761,14 +2081,7 @@ async function abrirScanner() {
 
       },
 
-      function() {
-
-        /*
-         * Ignoramos errores normales
-         * mientras busca un QR.
-         */
-
-      }
+      function() {}
 
     );
 
@@ -1778,21 +2091,15 @@ async function abrirScanner() {
 
 
     document
-      .getElementById(
-        'btnScanner'
-      )
+      .getElementById('btnScanner')
       .disabled =
         true;
 
 
     document
-      .getElementById(
-        'btnCerrarScanner'
-      )
+      .getElementById('btnCerrarScanner')
       .classList
-      .remove(
-        'oculto'
-      );
+      .remove('oculto');
 
 
   } catch (error) {
@@ -1812,10 +2119,6 @@ async function abrirScanner() {
 
 }
 
-
-/*******************************************************
- * CERRAR SCANNER
- *******************************************************/
 
 async function cerrarScanner() {
 
@@ -1839,9 +2142,7 @@ async function cerrarScanner() {
 
 
     try {
-
       lector.clear();
-
     } catch (error) {}
 
   }
@@ -1852,37 +2153,27 @@ async function cerrarScanner() {
 
 
   document
-    .getElementById(
-      'reader'
-    )
+    .getElementById('reader')
     .innerHTML =
       '';
 
 
   document
-    .getElementById(
-      'btnScanner'
-    )
+    .getElementById('btnScanner')
     .disabled =
       false;
 
 
   document
-    .getElementById(
-      'btnCerrarScanner'
-    )
+    .getElementById('btnCerrarScanner')
     .classList
-    .add(
-      'oculto'
-    );
+    .add('oculto');
 
 }
 
 
 /*******************************************************
- * JSONP
- *
- * SOLO para consultar cajas.
+ * JSONP CAJAS
  *******************************************************/
 
 function llamarApiJsonp(
@@ -1923,9 +2214,7 @@ function llamarApiJsonp(
       if (
         terminado
       ) {
-
         return;
-
       }
 
 
@@ -1957,9 +2246,7 @@ function llamarApiJsonp(
       if (
         terminado
       ) {
-
         return;
-
       }
 
 
@@ -2035,9 +2322,7 @@ function llamarApiJsonp(
         if (
           terminado
         ) {
-
           return;
-
         }
 
 
@@ -2052,7 +2337,7 @@ function llamarApiJsonp(
 
 
         fallo(
-          'La consulta de la caja tardó demasiado.'
+          'La consulta tardó demasiado.'
         );
 
       },
@@ -2062,28 +2347,20 @@ function llamarApiJsonp(
 }
 
 
-/*******************************************************
- * LIMPIAR JSONP
- *******************************************************/
-
 function limpiarJsonp(
   script,
   callback
 ) {
 
   try {
-
     script.remove();
-
   } catch (error) {}
 
 
   try {
-
     delete window[
       callback
     ];
-
   } catch (error) {}
 
 }
@@ -2153,29 +2430,19 @@ function mostrarError(
 function ocultarMensaje() {
 
   document
-    .getElementById(
-      'mensaje'
-    )
+    .getElementById('mensaje')
     .className =
       'oculto';
 
 }
 
 
-/*******************************************************
- * ERROR LEGIBLE
- *******************************************************/
-
 function obtenerMensajeError(
   error
 ) {
 
   if (!error) {
-
-    return (
-      'Error desconocido.'
-    );
-
+    return 'Error desconocido.';
   }
 
 
@@ -2183,18 +2450,14 @@ function obtenerMensajeError(
     typeof error ===
     'string'
   ) {
-
     return error;
-
   }
 
 
   if (
     error.message
   ) {
-
     return error.message;
-
   }
 
 
