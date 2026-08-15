@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -9,7 +10,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Prueba QR BSF</title>
+  <title>Stock Interno BSF</title>
 
   <script
     src="https://unpkg.com/html5-qrcode"
@@ -17,6 +18,10 @@
   </script>
 
   <style>
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       font-family: Arial, sans-serif;
@@ -35,11 +40,19 @@
       background: white;
       border-radius: 14px;
       padding: 20px;
+      margin-bottom: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,.12);
     }
 
     h1 {
       text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: #666;
+      margin-top: 0;
     }
 
     button {
@@ -51,6 +64,16 @@
       font-weight: bold;
       margin-top: 15px;
       cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .verde {
+      background: #188038;
+      color: white;
     }
 
     .azul {
@@ -68,214 +91,627 @@
       width: 100%;
     }
 
-    #resultado {
+    .resultado {
       margin-top: 20px;
       padding: 15px;
       border-radius: 10px;
-      background: #e6f4ea;
       display: none;
     }
 
-    #error {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
+    .resultado-ok {
+      background: #e6f4ea;
+      color: #137333;
+    }
+
+    .resultado-error {
       background: #fce8e6;
       color: #a50e0e;
-      display: none;
+    }
+
+    .titulo-resultado {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    #textoQR {
+      font-family: monospace;
+      font-size: 16px;
+      word-break: break-all;
     }
 
   </style>
 
 </head>
 
+
 <body>
 
-  <div class="contenedor">
+<div class="contenedor">
 
-    <div class="tarjeta">
+  <div class="tarjeta">
 
-      <h1>📦 Prueba QR BSF</h1>
+    <h1>📦 STOCK INTERNO</h1>
 
-      <button
-        id="btnAbrir"
-        class="azul"
-        onclick="abrirScanner()">
-        📷 ESCANEAR QR
-      </button>
+    <p class="subtitulo">
+      Producción BSF
+    </p>
 
-      <div id="reader"></div>
+  </div>
 
-      <button
-        id="btnCerrar"
-        class="rojo"
-        onclick="cerrarScanner()"
-        style="display:none;">
-        CERRAR CÁMARA
-      </button>
 
-      <div id="resultado">
-        <strong>QR leído:</strong>
-        <div id="textoResultado"></div>
-      </div>
+  <!-- ============================
+       PRUEBA DE CONEXIÓN
+       ============================ -->
 
-      <div id="error"></div>
+  <div class="tarjeta">
 
+    <h2>
+      Conexión con stock
+    </h2>
+
+    <p>
+      Esta prueba verifica la comunicación
+      entre la aplicación y Google Sheets.
+    </p>
+
+    <button
+      id="btnConexion"
+      class="verde"
+      onclick="probarConexion()">
+      🔗 PROBAR CONEXIÓN CON STOCK
+    </button>
+
+    <div
+      id="resultadoConexion"
+      class="resultado">
     </div>
 
   </div>
 
 
-  <script>
+  <!-- ============================
+       PRUEBA QR
+       ============================ -->
 
-    let lector = null;
-    let activo = false;
+  <div class="tarjeta">
+
+    <h2>
+      Lector QR
+    </h2>
+
+    <button
+      id="btnAbrir"
+      class="azul"
+      onclick="abrirScanner()">
+      📷 ESCANEAR QR
+    </button>
+
+    <div id="reader"></div>
+
+    <button
+      id="btnCerrar"
+      class="rojo"
+      onclick="cerrarScanner()"
+      style="display:none;">
+      CERRAR CÁMARA
+    </button>
 
 
-    async function abrirScanner() {
+    <div
+      id="resultadoQR"
+      class="resultado resultado-ok">
 
-      ocultarMensajes();
+      <div class="titulo-resultado">
+        QR leído:
+      </div>
 
-      if (activo) {
-        return;
+      <div id="textoQR"></div>
+
+    </div>
+
+
+    <div
+      id="errorQR"
+      class="resultado resultado-error">
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/*******************************************************
+ * CONFIGURACIÓN
+ *******************************************************/
+
+/*
+ * IMPORTANTE:
+ *
+ * Pegá acá la URL /exec de tu Apps Script.
+ *
+ * Ejemplo:
+ *
+ * https://script.google.com/macros/s/XXXXXXXX/exec
+ */
+
+const URL_APPS_SCRIPT =
+  'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
+
+
+/*******************************************************
+ * PRUEBA DE CONEXIÓN
+ *******************************************************/
+
+function probarConexion() {
+
+  const boton =
+    document.getElementById(
+      'btnConexion'
+    );
+
+  const resultado =
+    document.getElementById(
+      'resultadoConexion'
+    );
+
+
+  resultado.style.display =
+    'none';
+
+
+  if (
+    !URL_APPS_SCRIPT ||
+    URL_APPS_SCRIPT.indexOf(
+      'PEGA_ACA'
+    ) !== -1
+  ) {
+
+    mostrarConexionError(
+      'Primero tenés que colocar la URL de Apps Script en index.html.'
+    );
+
+    return;
+
+  }
+
+
+  boton.disabled =
+    true;
+
+  boton.textContent =
+    'CONECTANDO...';
+
+
+  /*
+   * Creamos un callback único
+   * para la respuesta JSONP.
+   */
+
+  const nombreCallback =
+    'respuestaBSF_' +
+    Date.now();
+
+
+  const script =
+    document.createElement(
+      'script'
+    );
+
+
+  let timeout = null;
+
+
+  window[nombreCallback] =
+    function(datos) {
+
+      if (timeout) {
+        clearTimeout(timeout);
       }
+
 
       try {
 
-        lector =
-          new Html5Qrcode(
-            'reader'
+        if (
+          datos &&
+          datos.ok
+        ) {
+
+          mostrarConexionOk(
+            '✅ ' +
+            datos.mensaje +
+            '<br><br>' +
+            'Respuesta del servidor: ' +
+            datos.fecha
           );
 
-        await lector.start(
+        } else {
 
-          {
-            facingMode:
-              'environment'
-          },
+          mostrarConexionError(
+            datos &&
+            datos.error
+              ? datos.error
+              : 'Apps Script respondió, pero indicó un error.'
+          );
 
-          {
-            fps: 10,
-            qrbox: {
-              width: 250,
-              height: 250
-            }
-          },
+        }
 
-          function(decodedText) {
+      } finally {
 
-            document.getElementById(
-              'textoResultado'
-            ).textContent =
-              decodedText;
-
-            document.getElementById(
-              'resultado'
-            ).style.display =
-              'block';
-
-            cerrarScanner();
-
-          },
-
-          function() {
-            // Ignoramos errores normales mientras busca QR
-          }
-
+        limpiarPruebaConexion(
+          script,
+          nombreCallback
         );
 
-        activo = true;
 
-        document.getElementById(
-          'btnAbrir'
-        ).disabled = true;
+        boton.disabled =
+          false;
 
-        document.getElementById(
-          'btnCerrar'
-        ).style.display = 'block';
 
-      } catch (error) {
-
-        mostrarError(
-          error.message || error
-        );
+        boton.textContent =
+          '🔗 PROBAR CONEXIÓN CON STOCK';
 
       }
 
+    };
+
+
+  script.onerror =
+    function() {
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+
+      mostrarConexionError(
+        'No se pudo conectar con Apps Script.'
+      );
+
+
+      limpiarPruebaConexion(
+        script,
+        nombreCallback
+      );
+
+
+      boton.disabled =
+        false;
+
+
+      boton.textContent =
+        '🔗 PROBAR CONEXIÓN CON STOCK';
+
+    };
+
+
+  const separador =
+    URL_APPS_SCRIPT.includes('?')
+      ? '&'
+      : '?';
+
+
+  script.src =
+    URL_APPS_SCRIPT +
+    separador +
+    'accion=ping' +
+    '&callback=' +
+    encodeURIComponent(
+      nombreCallback
+    ) +
+    '&_=' +
+    Date.now();
+
+
+  document.body.appendChild(
+    script
+  );
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        mostrarConexionError(
+          'La conexión tardó demasiado. Revisá la implementación de Apps Script.'
+        );
+
+
+        limpiarPruebaConexion(
+          script,
+          nombreCallback
+        );
+
+
+        boton.disabled =
+          false;
+
+
+        boton.textContent =
+          '🔗 PROBAR CONEXIÓN CON STOCK';
+
+      },
+      15000
+    );
+
+}
+
+
+function limpiarPruebaConexion(
+  script,
+  callback
+) {
+
+  try {
+
+    if (
+      script &&
+      script.parentNode
+    ) {
+
+      script.parentNode.removeChild(
+        script
+      );
+
     }
 
+  } catch (e) {}
 
-    async function cerrarScanner() {
 
-      if (
-        lector &&
-        activo
+  try {
+
+    delete window[
+      callback
+    ];
+
+  } catch (e) {}
+
+}
+
+
+function mostrarConexionOk(
+  texto
+) {
+
+  const elemento =
+    document.getElementById(
+      'resultadoConexion'
+    );
+
+
+  elemento.className =
+    'resultado resultado-ok';
+
+
+  elemento.innerHTML =
+    texto;
+
+
+  elemento.style.display =
+    'block';
+
+}
+
+
+function mostrarConexionError(
+  texto
+) {
+
+  const elemento =
+    document.getElementById(
+      'resultadoConexion'
+    );
+
+
+  elemento.className =
+    'resultado resultado-error';
+
+
+  elemento.textContent =
+    '⚠️ ' + texto;
+
+
+  elemento.style.display =
+    'block';
+
+}
+
+
+/*******************************************************
+ * LECTOR QR
+ *******************************************************/
+
+let lector =
+  null;
+
+
+let activo =
+  false;
+
+
+async function abrirScanner() {
+
+  ocultarMensajesQR();
+
+
+  if (activo) {
+    return;
+  }
+
+
+  try {
+
+    lector =
+      new Html5Qrcode(
+        'reader'
+      );
+
+
+    await lector.start(
+
+      {
+        facingMode:
+          'environment'
+      },
+
+      {
+        fps: 10,
+
+        qrbox: {
+          width: 250,
+          height: 250
+        }
+      },
+
+      function(
+        decodedText
       ) {
 
-        try {
+        document.getElementById(
+          'textoQR'
+        ).textContent =
+          decodedText;
 
-          await lector.stop();
 
-        } catch (e) {}
+        document.getElementById(
+          'resultadoQR'
+        ).style.display =
+          'block';
 
-        try {
 
-          lector.clear();
+        cerrarScanner();
 
-        } catch (e) {}
+      },
+
+      function() {
+
+        /*
+         * Ignoramos errores normales
+         * mientras busca un QR.
+         */
 
       }
 
-      activo = false;
-
-      lector = null;
-
-      document.getElementById(
-        'btnAbrir'
-      ).disabled = false;
-
-      document.getElementById(
-        'btnCerrar'
-      ).style.display = 'none';
-
-      document.getElementById(
-        'reader'
-      ).innerHTML = '';
-
-    }
+    );
 
 
-    function mostrarError(texto) {
-
-      const error =
-        document.getElementById(
-          'error'
-        );
-
-      error.textContent =
-        '⚠️ ' + texto;
-
-      error.style.display =
-        'block';
-
-    }
+    activo =
+      true;
 
 
-    function ocultarMensajes() {
+    document.getElementById(
+      'btnAbrir'
+    ).disabled =
+      true;
 
-      document.getElementById(
-        'error'
-      ).style.display =
-        'none';
 
-      document.getElementById(
-        'resultado'
-      ).style.display =
-        'none';
+    document.getElementById(
+      'btnCerrar'
+    ).style.display =
+      'block';
 
-    }
 
-  </script>
+  } catch (error) {
+
+    mostrarErrorQR(
+      error.message ||
+      error
+    );
+
+  }
+
+}
+
+
+async function cerrarScanner() {
+
+  if (
+    lector &&
+    activo
+  ) {
+
+    try {
+
+      await lector.stop();
+
+    } catch (e) {}
+
+
+    try {
+
+      lector.clear();
+
+    } catch (e) {}
+
+  }
+
+
+  activo =
+    false;
+
+
+  lector =
+    null;
+
+
+  document.getElementById(
+    'btnAbrir'
+  ).disabled =
+    false;
+
+
+  document.getElementById(
+    'btnCerrar'
+  ).style.display =
+    'none';
+
+
+  document.getElementById(
+    'reader'
+  ).innerHTML =
+    '';
+
+}
+
+
+function mostrarErrorQR(
+  texto
+) {
+
+  const error =
+    document.getElementById(
+      'errorQR'
+    );
+
+
+  error.textContent =
+    '⚠️ ' +
+    texto;
+
+
+  error.style.display =
+    'block';
+
+}
+
+
+function ocultarMensajesQR() {
+
+  document.getElementById(
+    'errorQR'
+  ).style.display =
+    'none';
+
+
+  document.getElementById(
+    'resultadoQR'
+  ).style.display =
+    'none';
+
+}
+
+</script>
 
 </body>
 
