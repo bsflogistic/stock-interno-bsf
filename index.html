@@ -116,6 +116,11 @@ button:disabled {
   color: #202124;
 }
 
+.oscuro {
+  background: #202124;
+  color: white;
+}
+
 .oculto {
   display: none !important;
 }
@@ -213,6 +218,21 @@ button:disabled {
   font-weight: bold;
 }
 
+.estado-activo {
+  color: #137333;
+  font-weight: bold;
+}
+
+.estado-anulado {
+  color: #a50e0e;
+  font-weight: bold;
+}
+
+.estado-finalizado {
+  color: #1a73e8;
+  font-weight: bold;
+}
+
 .cargando {
   text-align: center;
   font-weight: bold;
@@ -230,6 +250,57 @@ button:disabled {
   border-radius: 10px;
   background: #f8f9fa;
   white-space: pre-line;
+}
+
+.resumen-pedido {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.resumen-numero {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.operacion-card {
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.operacion-titulo {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.movimiento-card {
+  background: #f8f9fa;
+  border-radius: 9px;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.movimiento-card.anulado {
+  background: #fce8e6;
+}
+
+.movimiento-card.activo {
+  background: #e6f4ea;
+}
+
+.movimiento-titulo {
+  font-weight: bold;
+  font-size: 17px;
+}
+
+.packings-resumen {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 6px;
 }
 
 </style>
@@ -258,7 +329,7 @@ button:disabled {
   </div>
 
 
-  <!-- INICIO -->
+  <!-- NUEVO PEDIDO -->
 
   <div
     id="pantallaInicio"
@@ -341,6 +412,56 @@ button:disabled {
       onclick="iniciarPedido()">
       INICIAR PEDIDO
     </button>
+
+  </div>
+
+
+  <!-- VER PEDIDO -->
+
+  <div
+    class="tarjeta">
+
+    <h2>
+      🔎 Ver pedido
+    </h2>
+
+    <p>
+      Consultá qué productos ya fueron descontados.
+    </p>
+
+
+    <label>
+      Número de pedido
+    </label>
+
+    <input
+      id="pedidoConsultar"
+      type="text"
+      placeholder="Ej: 6475"
+    >
+
+
+    <button
+      id="btnConsultarPedido"
+      class="azul"
+      onclick="buscarPedido()">
+      VER PEDIDO
+    </button>
+
+
+    <div
+      id="cargandoPedido"
+      class="cargando oculto">
+
+      Buscando pedido...
+
+    </div>
+
+
+    <div
+      id="resultadoPedido"
+      class="oculto">
+    </div>
 
   </div>
 
@@ -516,7 +637,7 @@ button:disabled {
   </div>
 
 
-  <!-- ADMINISTRADOR -->
+  <!-- ADMIN -->
 
   <div
     id="tarjetaAdmin"
@@ -898,6 +1019,515 @@ async function llamarWorker(
 
 
   return resultado;
+
+}
+
+
+/*******************************************************
+ * VER PEDIDO
+ *******************************************************/
+
+function buscarPedido() {
+
+  const pedido =
+    document
+      .getElementById(
+        'pedidoConsultar'
+      )
+      .value
+      .trim();
+
+
+  if (!pedido) {
+
+    mostrarError(
+      'Ingresá el número de pedido.'
+    );
+
+    return;
+
+  }
+
+
+  const boton =
+    document.getElementById(
+      'btnConsultarPedido'
+    );
+
+
+  boton.disabled =
+    true;
+
+
+  boton.textContent =
+    'BUSCANDO...';
+
+
+  document
+    .getElementById(
+      'resultadoPedido'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  document
+    .getElementById(
+      'cargandoPedido'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
+
+
+  llamarApiJsonp(
+
+    {
+
+      accion:
+        'consultarPedido',
+
+      pedido:
+        pedido
+
+    },
+
+    function(datos) {
+
+      boton.disabled =
+        false;
+
+
+      boton.textContent =
+        'VER PEDIDO';
+
+
+      document
+        .getElementById(
+          'cargandoPedido'
+        )
+        .classList
+        .add(
+          'oculto'
+        );
+
+
+      if (
+        !datos ||
+        !datos.ok
+      ) {
+
+        mostrarError(
+          datos &&
+          datos.error
+            ? datos.error
+            : 'No se pudo consultar el pedido.'
+        );
+
+        return;
+
+      }
+
+
+      mostrarPedidoConsultado(
+        datos.pedido
+      );
+
+    },
+
+    function(error) {
+
+      boton.disabled =
+        false;
+
+
+      boton.textContent =
+        'VER PEDIDO';
+
+
+      document
+        .getElementById(
+          'cargandoPedido'
+        )
+        .classList
+        .add(
+          'oculto'
+        );
+
+
+      mostrarError(
+        error
+      );
+
+    }
+
+  );
+
+}
+
+
+/*******************************************************
+ * MOSTRAR PEDIDO
+ *******************************************************/
+
+function mostrarPedidoConsultado(
+  pedido
+) {
+
+  const contenedor =
+    document.getElementById(
+      'resultadoPedido'
+    );
+
+
+  contenedor.innerHTML =
+    '';
+
+
+  /*****************************************************
+   * RESUMEN
+   *****************************************************/
+
+  const resumen =
+    document.createElement(
+      'div'
+    );
+
+
+  resumen.className =
+    'resumen-pedido';
+
+
+  resumen.innerHTML =
+
+    '<div class="resumen-numero">' +
+      'Pedido ' +
+      escaparHtml(
+        pedido.numeroPedido
+      ) +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Cliente: <strong>' +
+      escaparHtml(
+        pedido.cliente
+      ) +
+      '</strong>' +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Operaciones: <strong>' +
+      pedido.cantidadOperaciones +
+      '</strong>' +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Movimientos registrados: <strong>' +
+      pedido.cantidadMovimientos +
+      '</strong>' +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Movimientos activos: <strong>' +
+      pedido.movimientosActivos +
+      '</strong>' +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Movimientos anulados: <strong>' +
+      pedido.movimientosAnulados +
+      '</strong>' +
+    '</div>' +
+
+    '<div class="dato">' +
+      'Packings actualmente descontados:' +
+    '</div>' +
+
+    '<div class="packings-resumen">' +
+      pedido.packingsActivos +
+    '</div>';
+
+
+  contenedor.appendChild(
+    resumen
+  );
+
+
+  /*****************************************************
+   * OPERACIONES
+   *****************************************************/
+
+  pedido.operaciones.forEach(
+    function(op) {
+
+      const tarjetaOperacion =
+        document.createElement(
+          'div'
+        );
+
+
+      tarjetaOperacion.className =
+        'operacion-card';
+
+
+      let claseEstado =
+        '';
+
+
+      if (
+        op.estado ===
+        'ACTIVO'
+      ) {
+
+        claseEstado =
+          'estado-activo';
+
+      }
+
+
+      if (
+        op.estado ===
+        'ANULADO'
+      ) {
+
+        claseEstado =
+          'estado-anulado';
+
+      }
+
+
+      if (
+        op.estado ===
+        'FINALIZADO'
+      ) {
+
+        claseEstado =
+          'estado-finalizado';
+
+      }
+
+
+      tarjetaOperacion.innerHTML =
+
+        '<div class="operacion-titulo">' +
+          escaparHtml(
+            op.idOperacion
+          ) +
+        '</div>' +
+
+        '<div class="dato">' +
+          'Estado: <span class="' +
+          claseEstado +
+          '">' +
+          escaparHtml(
+            op.estado
+          ) +
+          '</span>' +
+        '</div>' +
+
+        '<div class="dato">' +
+          'Fecha: <strong>' +
+          escaparHtml(
+            op.fecha
+          ) +
+          '</strong>' +
+        '</div>' +
+
+        '<div class="dato">' +
+          'Usuario: <strong>' +
+          escaparHtml(
+            op.usuario
+          ) +
+          '</strong>' +
+        '</div>';
+
+
+      /*************************************************
+       * SIN MOVIMIENTOS
+       *************************************************/
+
+      if (
+        !Array.isArray(
+          op.movimientos
+        ) ||
+        op.movimientos.length === 0
+      ) {
+
+        const sinMovimientos =
+          document.createElement(
+            'div'
+          );
+
+
+        sinMovimientos.className =
+          'movimiento-card';
+
+
+        sinMovimientos.textContent =
+          'Esta operación no tiene movimientos registrados.';
+
+
+        tarjetaOperacion.appendChild(
+          sinMovimientos
+        );
+
+      }
+
+
+      /*************************************************
+       * MOVIMIENTOS
+       *************************************************/
+
+      op.movimientos.forEach(
+        function(mov) {
+
+          const tarjetaMovimiento =
+            document.createElement(
+              'div'
+            );
+
+
+          const estadoMovimiento =
+            String(
+              mov.estado || ''
+            )
+              .toUpperCase();
+
+
+          tarjetaMovimiento.className =
+            'movimiento-card ' +
+            (
+              estadoMovimiento ===
+              'ANULADO'
+                ? 'anulado'
+                : 'activo'
+            );
+
+
+          let detalleAnulacion =
+            '';
+
+
+          if (
+            estadoMovimiento ===
+            'ANULADO'
+          ) {
+
+            detalleAnulacion =
+
+              '<div class="dato">' +
+                'Fecha anulación: <strong>' +
+                escaparHtml(
+                  mov.fechaAnulacion || ''
+                ) +
+                '</strong>' +
+              '</div>' +
+
+              '<div class="dato">' +
+                'Anulado por: <strong>' +
+                escaparHtml(
+                  mov.usuarioAnulacion || ''
+                ) +
+                '</strong>' +
+              '</div>';
+
+          }
+
+
+          tarjetaMovimiento.innerHTML =
+
+            '<div class="movimiento-titulo">' +
+              escaparHtml(
+                mov.producto
+              ) +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Movimiento: <strong>' +
+              escaparHtml(
+                mov.idMovimiento
+              ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Caja: <strong>' +
+              escaparHtml(
+                mov.codigoCaja
+              ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Descontado: <strong>' +
+              mov.cantidadDescontada +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Stock: <strong>' +
+              mov.cantidadAntes +
+              ' → ' +
+              mov.cantidadDespues +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Usuario: <strong>' +
+              escaparHtml(
+                mov.usuario
+              ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Fecha: <strong>' +
+              escaparHtml(
+                mov.fecha
+              ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dato">' +
+              'Estado: <span class="' +
+              (
+                estadoMovimiento ===
+                'ANULADO'
+                  ? 'estado-anulado'
+                  : 'estado-activo'
+              ) +
+              '">' +
+              escaparHtml(
+                estadoMovimiento
+              ) +
+              '</span>' +
+            '</div>' +
+
+            detalleAnulacion;
+
+
+          tarjetaOperacion.appendChild(
+            tarjetaMovimiento
+          );
+
+        }
+      );
+
+
+      contenedor.appendChild(
+        tarjetaOperacion
+      );
+
+    }
+  );
+
+
+  contenedor.classList.remove(
+    'oculto'
+  );
 
 }
 
@@ -1647,7 +2277,7 @@ async function ejecutarDescuento() {
 
 
 /*******************************************************
- * FINALIZAR
+ * FINALIZAR PEDIDO
  *******************************************************/
 
 async function pedirFinalizarPedido() {
@@ -2664,6 +3294,44 @@ function limpiarJsonp(
     ];
 
   } catch (error) {}
+
+}
+
+
+/*******************************************************
+ * ESCAPAR HTML
+ *******************************************************/
+
+function escaparHtml(
+  valor
+) {
+
+  return String(
+    valor === undefined ||
+    valor === null
+      ? ''
+      : valor
+  )
+    .replace(
+      /&/g,
+      '&amp;'
+    )
+    .replace(
+      /</g,
+      '&lt;'
+    )
+    .replace(
+      />/g,
+      '&gt;'
+    )
+    .replace(
+      /"/g,
+      '&quot;'
+    )
+    .replace(
+      /'/g,
+      '&#039;'
+    );
 
 }
 
