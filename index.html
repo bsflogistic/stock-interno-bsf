@@ -139,6 +139,7 @@ button:disabled {
   padding: 14px;
   border-radius: 10px;
   margin-bottom: 15px;
+  line-height: 1.4;
 }
 
 .mensaje-ok {
@@ -485,7 +486,7 @@ button:disabled {
 
 
 <!-- ===================================
-     MODAL DESCUENTO
+     MODAL CONFIRMAR DESCUENTO
      =================================== -->
 
 <div
@@ -553,244 +554,167 @@ button:disabled {
 </div>
 
 
-<!-- ===================================
-     FORMULARIO POST INVISIBLE
-     =================================== -->
-
-<iframe
-  id="iframeApi"
-  name="iframeApi"
-  class="oculto">
-</iframe>
-
-<form
-  id="formApi"
-  method="POST"
-  target="iframeApi"
-  class="oculto">
-</form>
-
-
 <script>
 
 /*******************************************************
  * CONFIGURACION
  *******************************************************/
 
+const URL_WORKER =
+  'https://stock-interno-bsf-api.bsfseeds-com-ar.workers.dev';
+
+
 const URL_APPS_SCRIPT =
   'https://script.google.com/macros/s/AKfycbzAAJJJhxkTUt99JFfadXQT2IAKmOPS4PKRudeotALBeIAMn60uSktlcty9w9kJv06f/exec';
 
 
-let operacion = null;
+let operacion =
+  null;
 
-let cajaActual = null;
+let cajaActual =
+  null;
 
-let cantidadPendiente = 0;
+let cantidadPendiente =
+  0;
 
-let lector = null;
+let lector =
+  null;
 
-let scannerActivo = false;
+let scannerActivo =
+  false;
 
-let consultaEnCurso = false;
+let consultaEnCurso =
+  false;
 
-let postPendiente = null;
-
-let timeoutPost = null;
+let operacionEnCurso =
+  false;
 
 
 /*******************************************************
- * POST HACIA APPS SCRIPT
+ * LLAMAR AL WORKER
  *******************************************************/
 
-function enviarPost(
-  parametros,
-  callback
+async function llamarWorker(
+  datos
 ) {
 
-  if (postPendiente) {
+  const respuesta =
+    await fetch(
+      URL_WORKER,
+      {
 
-    mostrarError(
-      'Hay una operación en proceso.'
+        method:
+          'POST',
+
+        headers: {
+
+          'Content-Type':
+            'application/json'
+
+        },
+
+        body:
+          JSON.stringify(
+            datos
+          )
+
+      }
     );
 
-    return;
+
+  let resultado;
+
+
+  try {
+
+    resultado =
+      await respuesta.json();
+
+  } catch (error) {
+
+    throw new Error(
+      'El servidor respondió con un formato inválido.'
+    );
 
   }
 
 
-  const formulario =
-    document.getElementById(
-      'formApi'
+  /*
+   * Aunque HTTP sea 400/500,
+   * queremos mostrar el mensaje
+   * real enviado por nuestro backend.
+   */
+  if (
+    !respuesta.ok &&
+    !resultado.error
+  ) {
+
+    throw new Error(
+      'Error del servidor (' +
+      respuesta.status +
+      ').'
     );
 
-
-  formulario.innerHTML =
-    '';
+  }
 
 
-  formulario.action =
-    URL_APPS_SCRIPT;
-
-
-  Object.keys(
-    parametros
-  ).forEach(
-    function(clave) {
-
-      const input =
-        document.createElement(
-          'input'
-        );
-
-
-      input.type =
-        'hidden';
-
-
-      input.name =
-        clave;
-
-
-      input.value =
-        parametros[clave];
-
-
-      formulario.appendChild(
-        input
-      );
-
-    }
-  );
-
-
-  postPendiente =
-    callback;
-
-
-  timeoutPost =
-    setTimeout(
-      function() {
-
-        postPendiente =
-          null;
-
-
-        mostrarError(
-          'La operación tardó demasiado. Revisá la conexión antes de volver a intentar.'
-        );
-
-      },
-      20000
-    );
-
-
-  formulario.submit();
+  return resultado;
 
 }
-
-
-/*******************************************************
- * RECIBIR RESPUESTA DE APPS SCRIPT
- *******************************************************/
-
-window.addEventListener(
-  'message',
-  function(event) {
-
-    /*
-     * La respuesta de Apps Script puede llegar
-     * desde el iframe servido por Google.
-     *
-     * El destino ya está limitado desde
-     * Apps Script a nuestro dominio GitHub.
-     */
-
-    if (
-      !event.data ||
-      typeof event.data !==
-      'object'
-    ) {
-
-      return;
-
-    }
-
-
-    if (
-      !postPendiente
-    ) {
-
-      return;
-
-    }
-
-
-    if (
-      timeoutPost
-    ) {
-
-      clearTimeout(
-        timeoutPost
-      );
-
-    }
-
-
-    const callback =
-      postPendiente;
-
-
-    postPendiente =
-      null;
-
-
-    callback(
-      event.data
-    );
-
-  }
-);
 
 
 /*******************************************************
  * INICIAR PEDIDO
  *******************************************************/
 
-function iniciarPedido() {
+async function iniciarPedido() {
 
   ocultarMensaje();
 
 
+  if (
+    operacionEnCurso
+  ) {
+
+    return;
+
+  }
+
+
   const pin =
-    document.getElementById(
-      'pin'
-    )
-    .value
-    .trim();
+    document
+      .getElementById(
+        'pin'
+      )
+      .value
+      .trim();
 
 
   const usuario =
-    document.getElementById(
-      'usuario'
-    )
-    .value
-    .trim();
+    document
+      .getElementById(
+        'usuario'
+      )
+      .value
+      .trim();
 
 
   const pedido =
-    document.getElementById(
-      'pedido'
-    )
-    .value
-    .trim();
+    document
+      .getElementById(
+        'pedido'
+      )
+      .value
+      .trim();
 
 
   const cliente =
-    document.getElementById(
-      'cliente'
-    )
-    .value
-    .trim();
+    document
+      .getElementById(
+        'cliente'
+      )
+      .value
+      .trim();
 
 
   if (
@@ -815,6 +739,10 @@ function iniciarPedido() {
     );
 
 
+  operacionEnCurso =
+    true;
+
+
   boton.disabled =
     true;
 
@@ -823,122 +751,165 @@ function iniciarPedido() {
     'INICIANDO...';
 
 
-  enviarPost(
-    {
+  try {
 
-      accion:
-        'iniciarPedido',
+    const resultado =
+      await llamarWorker({
 
-      pin:
-        pin,
+        accion:
+          'iniciarPedido',
 
-      usuario:
-        usuario,
+        pin:
+          pin,
 
-      pedido:
-        pedido,
+        usuario:
+          usuario,
 
-      cliente:
-        cliente
+        pedido:
+          pedido,
 
-    },
+        cliente:
+          cliente
 
-    function(resultado) {
-
-      boton.disabled =
-        false;
+      });
 
 
-      boton.textContent =
-        'INICIAR PEDIDO';
+    if (
+      !resultado.ok
+    ) {
 
-
-      if (
-        !resultado.ok
-      ) {
-
-        mostrarError(
-          resultado.error ||
-          'No se pudo iniciar el pedido.'
-        );
-
-        return;
-
-      }
-
-
-      operacion =
-        resultado;
-
-
-      /*
-       * Guardamos el PIN solo en memoria
-       * durante esta operación.
-       */
-      operacion.pin =
-        pin;
-
-
-      document.getElementById(
-        'pedidoActivo'
-      ).textContent =
-        resultado.pedido;
-
-
-      document.getElementById(
-        'clienteActivo'
-      ).textContent =
-        resultado.cliente;
-
-
-      document.getElementById(
-        'usuarioActivo'
-      ).textContent =
-        resultado.usuario;
-
-
-      document.getElementById(
-        'operacionActiva'
-      ).textContent =
-        resultado.idOperacion;
-
-
-      document.getElementById(
-        'pantallaInicio'
-      ).classList.add(
-        'oculto'
-      );
-
-
-      document.getElementById(
-        'pantallaPedido'
-      ).classList.remove(
-        'oculto'
-      );
-
-
-      mostrarOk(
-        '✅ Pedido iniciado correctamente.'
+      throw new Error(
+        resultado.error ||
+        'No se pudo iniciar el pedido.'
       );
 
     }
-  );
+
+
+    operacion = {
+
+      idOperacion:
+        resultado.idOperacion,
+
+      pedido:
+        resultado.pedido,
+
+      cliente:
+        resultado.cliente,
+
+      usuario:
+        resultado.usuario,
+
+      estado:
+        resultado.estado,
+
+      /*
+       * El PIN se mantiene únicamente
+       * en memoria mientras el pedido
+       * esté abierto.
+       */
+      pin:
+        pin
+
+    };
+
+
+    document
+      .getElementById(
+        'pedidoActivo'
+      )
+      .textContent =
+        operacion.pedido;
+
+
+    document
+      .getElementById(
+        'clienteActivo'
+      )
+      .textContent =
+        operacion.cliente;
+
+
+    document
+      .getElementById(
+        'usuarioActivo'
+      )
+      .textContent =
+        operacion.usuario;
+
+
+    document
+      .getElementById(
+        'operacionActiva'
+      )
+      .textContent =
+        operacion.idOperacion;
+
+
+    document
+      .getElementById(
+        'pantallaInicio'
+      )
+      .classList
+      .add(
+        'oculto'
+      );
+
+
+    document
+      .getElementById(
+        'pantallaPedido'
+      )
+      .classList
+      .remove(
+        'oculto'
+      );
+
+
+    mostrarOk(
+      '✅ Pedido iniciado correctamente.'
+    );
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    operacionEnCurso =
+      false;
+
+
+    boton.disabled =
+      false;
+
+
+    boton.textContent =
+      'INICIAR PEDIDO';
+
+  }
 
 }
 
 
 /*******************************************************
- * CONSULTA DE CAJA
+ * BUSCAR CAJA MANUALMENTE
  *******************************************************/
 
 function buscarCajaManual() {
 
   const codigo =
-    document.getElementById(
-      'codigoManual'
-    )
-    .value
-    .trim();
+    document
+      .getElementById(
+        'codigoManual'
+      )
+      .value
+      .trim();
 
 
   if (!codigo) {
@@ -958,6 +929,13 @@ function buscarCajaManual() {
 
 }
 
+
+/*******************************************************
+ * CONSULTAR CAJA
+ *
+ * Por ahora mantenemos la consulta GET/JSONP
+ * que ya funcionaba correctamente.
+ *******************************************************/
 
 function consultarCaja(
   codigo
@@ -979,18 +957,24 @@ function consultarCaja(
   ocultarMensaje();
 
 
-  document.getElementById(
-    'tarjetaCaja'
-  ).classList.add(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'tarjetaCaja'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
 
 
-  document.getElementById(
-    'cargandoCaja'
-  ).classList.remove(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'cargandoCaja'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
 
 
   llamarApiJsonp(
@@ -1010,11 +994,14 @@ function consultarCaja(
         false;
 
 
-      document.getElementById(
-        'cargandoCaja'
-      ).classList.add(
-        'oculto'
-      );
+      document
+        .getElementById(
+          'cargandoCaja'
+        )
+        .classList
+        .add(
+          'oculto'
+        );
 
 
       if (
@@ -1048,11 +1035,14 @@ function consultarCaja(
         false;
 
 
-      document.getElementById(
-        'cargandoCaja'
-      ).classList.add(
-        'oculto'
-      );
+      document
+        .getElementById(
+          'cargandoCaja'
+        )
+        .classList
+        .add(
+          'oculto'
+        );
 
 
       mostrarError(
@@ -1072,22 +1062,28 @@ function consultarCaja(
 
 function mostrarCaja() {
 
-  document.getElementById(
-    'productoCaja'
-  ).textContent =
-    cajaActual.producto;
+  document
+    .getElementById(
+      'productoCaja'
+    )
+    .textContent =
+      cajaActual.producto;
 
 
-  document.getElementById(
-    'codigoCaja'
-  ).textContent =
-    cajaActual.codigoCaja;
+  document
+    .getElementById(
+      'codigoCaja'
+    )
+    .textContent =
+      cajaActual.codigoCaja;
 
 
-  document.getElementById(
-    'stockCaja'
-  ).textContent =
-    cajaActual.cantidadActual;
+  document
+    .getElementById(
+      'stockCaja'
+    )
+    .textContent =
+      cajaActual.cantidadActual;
 
 
   const estado =
@@ -1126,23 +1122,30 @@ function mostrarCaja() {
   }
 
 
-  document.getElementById(
-    'cantidadDescontar'
-  ).value =
-    '';
+  document
+    .getElementById(
+      'cantidadDescontar'
+    )
+    .value =
+      '';
 
 
-  document.getElementById(
-    'codigoManual'
-  ).value =
-    '';
+  document
+    .getElementById(
+      'codigoManual'
+    )
+    .value =
+      '';
 
 
-  document.getElementById(
-    'tarjetaCaja'
-  ).classList.remove(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'tarjetaCaja'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
 
 }
 
@@ -1190,9 +1193,11 @@ function prepararDescuento() {
 
   const cantidad =
     Number(
-      document.getElementById(
-        'cantidadDescontar'
-      ).value
+      document
+        .getElementById(
+          'cantidadDescontar'
+        )
+        .value
     );
 
 
@@ -1241,42 +1246,59 @@ function prepararDescuento() {
     cantidad;
 
 
-  document.getElementById(
-    'modalCantidad'
-  ).textContent =
-    cantidad +
-    ' packings';
+  document
+    .getElementById(
+      'modalCantidad'
+    )
+    .textContent =
+      cantidad +
+      (
+        cantidad === 1
+          ? ' packing'
+          : ' packings'
+      );
 
 
-  document.getElementById(
-    'modalProducto'
-  ).textContent =
-    cajaActual.producto;
+  document
+    .getElementById(
+      'modalProducto'
+    )
+    .textContent =
+      cajaActual.producto;
 
 
-  document.getElementById(
-    'modalCaja'
-  ).textContent =
-    cajaActual.codigoCaja;
+  document
+    .getElementById(
+      'modalCaja'
+    )
+    .textContent =
+      cajaActual.codigoCaja;
 
 
-  document.getElementById(
-    'modalAntes'
-  ).textContent =
-    cajaActual.cantidadActual;
+  document
+    .getElementById(
+      'modalAntes'
+    )
+    .textContent =
+      cajaActual.cantidadActual;
 
 
-  document.getElementById(
-    'modalDespues'
-  ).textContent =
-    despues;
+  document
+    .getElementById(
+      'modalDespues'
+    )
+    .textContent =
+      despues;
 
 
-  document.getElementById(
-    'modalDescuento'
-  ).classList.remove(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'modalDescuento'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
 
 }
 
@@ -1285,9 +1307,10 @@ function prepararDescuento() {
  * EJECUTAR DESCUENTO
  *******************************************************/
 
-function ejecutarDescuento() {
+async function ejecutarDescuento() {
 
   if (
+    operacionEnCurso ||
     !operacion ||
     !cajaActual ||
     !cantidadPendiente
@@ -1304,6 +1327,10 @@ function ejecutarDescuento() {
     );
 
 
+  operacionEnCurso =
+    true;
+
+
   boton.disabled =
     true;
 
@@ -1312,75 +1339,92 @@ function ejecutarDescuento() {
     'DESCONTANDO...';
 
 
-  enviarPost(
-    {
+  try {
 
-      accion:
-        'descontar',
+    const resultado =
+      await llamarWorker({
 
-      pin:
-        operacion.pin,
+        accion:
+          'descontar',
 
-      idOperacion:
-        operacion.idOperacion,
+        pin:
+          operacion.pin,
 
-      codigoCaja:
-        cajaActual.codigoCaja,
+        idOperacion:
+          operacion.idOperacion,
 
-      cantidad:
-        cantidadPendiente,
+        codigoCaja:
+          cajaActual.codigoCaja,
 
-      usuario:
-        operacion.usuario
+        cantidad:
+          cantidadPendiente,
 
-    },
+        usuario:
+          operacion.usuario
 
-    function(resultado) {
-
-      boton.disabled =
-        false;
+      });
 
 
-      boton.textContent =
-        'SÍ, DESCONTAR';
+    if (
+      !resultado.ok
+    ) {
 
-
-      cerrarModalDescuento();
-
-
-      if (
-        !resultado.ok
-      ) {
-
-        mostrarError(
-          resultado.error ||
-          'No se pudo realizar el descuento.'
-        );
-
-        return;
-
-      }
-
-
-      mostrarOk(
-        '✅ ' +
-        resultado.producto +
-        ': se descontaron ' +
-        resultado.cantidadDescontada +
-        ' packings. Stock ' +
-        resultado.cantidadAntes +
-        ' → ' +
-        resultado.cantidadDespues +
-        '. Movimiento ' +
-        resultado.idMovimiento +
-        '.'
+      throw new Error(
+        resultado.error ||
+        'No se pudo realizar el descuento.'
       );
 
-
-      limpiarCaja();
-
     }
-  );
+
+
+    cerrarModalDescuento();
+
+
+    mostrarOk(
+      '✅ ' +
+      resultado.producto +
+      ': se descontaron ' +
+      resultado.cantidadDescontada +
+      (
+        resultado.cantidadDescontada === 1
+          ? ' packing. '
+          : ' packings. '
+      ) +
+      'Stock ' +
+      resultado.cantidadAntes +
+      ' → ' +
+      resultado.cantidadDespues +
+      '. Movimiento ' +
+      resultado.idMovimiento +
+      '.'
+    );
+
+
+    limpiarCaja();
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    operacionEnCurso =
+      false;
+
+
+    boton.disabled =
+      false;
+
+
+    boton.textContent =
+      'SÍ, DESCONTAR';
+
+  }
 
 }
 
@@ -1391,11 +1435,14 @@ function ejecutarDescuento() {
 
 function cerrarModalDescuento() {
 
-  document.getElementById(
-    'modalDescuento'
-  ).classList.add(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'modalDescuento'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
 
 }
 
@@ -1421,17 +1468,22 @@ function limpiarCaja() {
     0;
 
 
-  document.getElementById(
-    'tarjetaCaja'
-  ).classList.add(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'tarjetaCaja'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
 
 
-  document.getElementById(
-    'cantidadDescontar'
-  ).value =
-    '';
+  document
+    .getElementById(
+      'cantidadDescontar'
+    )
+    .value =
+      '';
 
 }
 
@@ -1440,9 +1492,12 @@ function limpiarCaja() {
  * FINALIZAR PEDIDO
  *******************************************************/
 
-function pedirFinalizarPedido() {
+async function pedirFinalizarPedido() {
 
-  if (!operacion) {
+  if (
+    operacionEnCurso ||
+    !operacion
+  ) {
 
     return;
 
@@ -1470,6 +1525,10 @@ function pedirFinalizarPedido() {
     );
 
 
+  operacionEnCurso =
+    true;
+
+
   boton.disabled =
     true;
 
@@ -1478,101 +1537,125 @@ function pedirFinalizarPedido() {
     'FINALIZANDO...';
 
 
-  enviarPost(
-    {
+  try {
 
-      accion:
-        'finalizarPedido',
+    const resultado =
+      await llamarWorker({
 
-      pin:
-        operacion.pin,
+        accion:
+          'finalizarPedido',
 
-      idOperacion:
-        operacion.idOperacion
+        pin:
+          operacion.pin,
 
-    },
+        idOperacion:
+          operacion.idOperacion
 
-    function(resultado) {
-
-      boton.disabled =
-        false;
+      });
 
 
-      boton.textContent =
-        'FINALIZAR PEDIDO';
+    if (
+      !resultado.ok
+    ) {
 
-
-      if (
-        !resultado.ok
-      ) {
-
-        mostrarError(
-          resultado.error ||
-          'No se pudo finalizar el pedido.'
-        );
-
-        return;
-
-      }
-
-
-      cerrarScanner();
-
-
-      operacion =
-        null;
-
-
-      cajaActual =
-        null;
-
-
-      cantidadPendiente =
-        0;
-
-
-      document.getElementById(
-        'pantallaPedido'
-      ).classList.add(
-        'oculto'
-      );
-
-
-      document.getElementById(
-        'pantallaInicio'
-      ).classList.remove(
-        'oculto'
-      );
-
-
-      /*
-       * Conservamos usuario.
-       * Limpiamos pedido, cliente y PIN.
-       */
-      document.getElementById(
-        'pedido'
-      ).value =
-        '';
-
-
-      document.getElementById(
-        'cliente'
-      ).value =
-        '';
-
-
-      document.getElementById(
-        'pin'
-      ).value =
-        '';
-
-
-      mostrarOk(
-        '✅ Pedido finalizado correctamente.'
+      throw new Error(
+        resultado.error ||
+        'No se pudo finalizar el pedido.'
       );
 
     }
-  );
+
+
+    await cerrarScanner();
+
+
+    operacion =
+      null;
+
+
+    cajaActual =
+      null;
+
+
+    cantidadPendiente =
+      0;
+
+
+    document
+      .getElementById(
+        'pantallaPedido'
+      )
+      .classList
+      .add(
+        'oculto'
+      );
+
+
+    document
+      .getElementById(
+        'pantallaInicio'
+      )
+      .classList
+      .remove(
+        'oculto'
+      );
+
+
+    /*
+     * Conservamos el usuario para facilitar
+     * el siguiente pedido.
+     */
+    document
+      .getElementById(
+        'pedido'
+      )
+      .value =
+        '';
+
+
+    document
+      .getElementById(
+        'cliente'
+      )
+      .value =
+        '';
+
+
+    document
+      .getElementById(
+        'pin'
+      )
+      .value =
+        '';
+
+
+    mostrarOk(
+      '✅ Pedido finalizado correctamente.'
+    );
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    operacionEnCurso =
+      false;
+
+
+    boton.disabled =
+      false;
+
+
+    boton.textContent =
+      'FINALIZAR PEDIDO';
+
+  }
 
 }
 
@@ -1611,7 +1694,8 @@ async function abrirScanner() {
       },
 
       {
-        fps: 10,
+        fps:
+          10,
 
         qrbox:
           function(
@@ -1626,7 +1710,7 @@ async function abrirScanner() {
               );
 
 
-            const tamaño =
+            const tamano =
               Math.floor(
                 minimo *
                 0.70
@@ -1636,10 +1720,10 @@ async function abrirScanner() {
             return {
 
               width:
-                tamaño,
+                tamano,
 
               height:
-                tamaño
+                tamano
 
             };
 
@@ -1680,8 +1764,8 @@ async function abrirScanner() {
       function() {
 
         /*
-         * Errores normales mientras
-         * busca un QR.
+         * Ignoramos errores normales
+         * mientras busca un QR.
          */
 
       }
@@ -1693,17 +1777,22 @@ async function abrirScanner() {
       true;
 
 
-    document.getElementById(
-      'btnScanner'
-    ).disabled =
-      true;
+    document
+      .getElementById(
+        'btnScanner'
+      )
+      .disabled =
+        true;
 
 
-    document.getElementById(
-      'btnCerrarScanner'
-    ).classList.remove(
-      'oculto'
-    );
+    document
+      .getElementById(
+        'btnCerrarScanner'
+      )
+      .classList
+      .remove(
+        'oculto'
+      );
 
 
   } catch (error) {
@@ -1724,6 +1813,10 @@ async function abrirScanner() {
 }
 
 
+/*******************************************************
+ * CERRAR SCANNER
+ *******************************************************/
+
 async function cerrarScanner() {
 
   scannerActivo =
@@ -1742,14 +1835,14 @@ async function cerrarScanner() {
 
       }
 
-    } catch (e) {}
+    } catch (error) {}
 
 
     try {
 
       lector.clear();
 
-    } catch (e) {}
+    } catch (error) {}
 
   }
 
@@ -1758,29 +1851,38 @@ async function cerrarScanner() {
     null;
 
 
-  document.getElementById(
-    'reader'
-  ).innerHTML =
-    '';
+  document
+    .getElementById(
+      'reader'
+    )
+    .innerHTML =
+      '';
 
 
-  document.getElementById(
-    'btnScanner'
-  ).disabled =
-    false;
+  document
+    .getElementById(
+      'btnScanner'
+    )
+    .disabled =
+      false;
 
 
-  document.getElementById(
-    'btnCerrarScanner'
-  ).classList.add(
-    'oculto'
-  );
+  document
+    .getElementById(
+      'btnCerrarScanner'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
 
 }
 
 
 /*******************************************************
- * JSONP - LECTURA DE CAJAS
+ * JSONP
+ *
+ * SOLO para consultar cajas.
  *******************************************************/
 
 function llamarApiJsonp(
@@ -1877,7 +1979,7 @@ function llamarApiJsonp(
 
 
       fallo(
-        'No se pudo conectar con Apps Script.'
+        'No se pudo consultar Apps Script.'
       );
 
     };
@@ -1889,16 +1991,17 @@ function llamarApiJsonp(
 
   Object.keys(
     parametros
-  ).forEach(
-    function(clave) {
+  )
+    .forEach(
+      function(clave) {
 
-      query.set(
-        clave,
-        parametros[clave]
-      );
+        query.set(
+          clave,
+          parametros[clave]
+        );
 
-    }
-  );
+      }
+    );
 
 
   query.set(
@@ -1919,9 +2022,10 @@ function llamarApiJsonp(
     query.toString();
 
 
-  document.body.appendChild(
-    script
-  );
+  document.body
+    .appendChild(
+      script
+    );
 
 
   timeout =
@@ -1948,7 +2052,7 @@ function llamarApiJsonp(
 
 
         fallo(
-          'La consulta tardó demasiado.'
+          'La consulta de la caja tardó demasiado.'
         );
 
       },
@@ -1957,6 +2061,10 @@ function llamarApiJsonp(
 
 }
 
+
+/*******************************************************
+ * LIMPIAR JSONP
+ *******************************************************/
 
 function limpiarJsonp(
   script,
@@ -1967,7 +2075,7 @@ function limpiarJsonp(
 
     script.remove();
 
-  } catch (e) {}
+  } catch (error) {}
 
 
   try {
@@ -1976,7 +2084,7 @@ function limpiarJsonp(
       callback
     ];
 
-  } catch (e) {}
+  } catch (error) {}
 
 }
 
@@ -2004,8 +2112,10 @@ function mostrarOk(
 
 
   window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
+    top:
+      0,
+    behavior:
+      'smooth'
   });
 
 }
@@ -2031,8 +2141,10 @@ function mostrarError(
 
 
   window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
+    top:
+      0,
+    behavior:
+      'smooth'
   });
 
 }
@@ -2040,13 +2152,19 @@ function mostrarError(
 
 function ocultarMensaje() {
 
-  document.getElementById(
-    'mensaje'
-  ).className =
-    'oculto';
+  document
+    .getElementById(
+      'mensaje'
+    )
+    .className =
+      'oculto';
 
 }
 
+
+/*******************************************************
+ * ERROR LEGIBLE
+ *******************************************************/
 
 function obtenerMensajeError(
   error
