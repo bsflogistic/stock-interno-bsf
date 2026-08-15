@@ -65,12 +65,14 @@ label {
   margin-bottom: 6px;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 13px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  background: white;
 }
 
 button {
@@ -112,11 +114,6 @@ button:disabled {
 .gris {
   background: #e8eaed;
   color: #202124;
-}
-
-.oscuro {
-  background: #202124;
-  color: white;
 }
 
 .oculto {
@@ -261,9 +258,7 @@ button:disabled {
   </div>
 
 
-  <!-- ===================================
-       INICIO
-       =================================== -->
+  <!-- INICIO -->
 
   <div
     id="pantallaInicio"
@@ -291,11 +286,31 @@ button:disabled {
       Usuario
     </label>
 
-    <input
+    <select
       id="usuario"
-      type="text"
-      placeholder="Ej: Facundo"
-    >
+      onchange="guardarUsuarioProduccion()">
+
+      <option value="">
+        Seleccionar usuario
+      </option>
+
+      <option value="Facundo">
+        Facundo
+      </option>
+
+      <option value="Candelaria">
+        Candelaria
+      </option>
+
+      <option value="Joni Finanzas">
+        Joni Finanzas
+      </option>
+
+      <option value="Jonas">
+        Jonas
+      </option>
+
+    </select>
 
 
     <label>
@@ -330,9 +345,7 @@ button:disabled {
   </div>
 
 
-  <!-- ===================================
-       PEDIDO ACTIVO
-       =================================== -->
+  <!-- PEDIDO ACTIVO -->
 
   <div
     id="pantallaPedido"
@@ -503,9 +516,7 @@ button:disabled {
   </div>
 
 
-  <!-- ===================================
-       ADMINISTRADOR
-       =================================== -->
+  <!-- ADMINISTRADOR -->
 
   <div
     id="tarjetaAdmin"
@@ -537,11 +548,31 @@ button:disabled {
       Usuario que anula
     </label>
 
-    <input
+    <select
       id="usuarioAnulacion"
-      type="text"
-      placeholder="Ej: Joni"
-    >
+      onchange="guardarUsuarioAdmin()">
+
+      <option value="">
+        Seleccionar usuario
+      </option>
+
+      <option value="Facundo">
+        Facundo
+      </option>
+
+      <option value="Candelaria">
+        Candelaria
+      </option>
+
+      <option value="Joni Finanzas">
+        Joni Finanzas
+      </option>
+
+      <option value="Jonas">
+        Jonas
+      </option>
+
+    </select>
 
 
     <hr class="separador">
@@ -604,9 +635,7 @@ button:disabled {
 </div>
 
 
-<!-- ===================================
-     MODAL DESCUENTO
-     =================================== -->
+<!-- MODAL DESCUENTO -->
 
 <div
   id="modalDescuento"
@@ -697,6 +726,133 @@ let operacionEnCurso = false;
 
 
 /*******************************************************
+ * USUARIOS RECORDADOS
+ *******************************************************/
+
+document.addEventListener(
+  'DOMContentLoaded',
+  function() {
+
+    const usuarioProduccion =
+      localStorage.getItem(
+        'bsf_usuario_produccion'
+      );
+
+
+    const usuarioAdmin =
+      localStorage.getItem(
+        'bsf_usuario_admin'
+      );
+
+
+    if (
+      usuarioProduccion
+    ) {
+
+      const select =
+        document.getElementById(
+          'usuario'
+        );
+
+
+      if (
+        Array.from(
+          select.options
+        ).some(
+          option =>
+            option.value ===
+            usuarioProduccion
+        )
+      ) {
+
+        select.value =
+          usuarioProduccion;
+
+      }
+
+    }
+
+
+    if (
+      usuarioAdmin
+    ) {
+
+      const selectAdmin =
+        document.getElementById(
+          'usuarioAnulacion'
+        );
+
+
+      if (
+        Array.from(
+          selectAdmin.options
+        ).some(
+          option =>
+            option.value ===
+            usuarioAdmin
+        )
+      ) {
+
+        selectAdmin.value =
+          usuarioAdmin;
+
+      }
+
+    }
+
+  }
+);
+
+
+function guardarUsuarioProduccion() {
+
+  const usuario =
+    document
+      .getElementById(
+        'usuario'
+      )
+      .value;
+
+
+  if (
+    usuario
+  ) {
+
+    localStorage.setItem(
+      'bsf_usuario_produccion',
+      usuario
+    );
+
+  }
+
+}
+
+
+function guardarUsuarioAdmin() {
+
+  const usuario =
+    document
+      .getElementById(
+        'usuarioAnulacion'
+      )
+      .value;
+
+
+  if (
+    usuario
+  ) {
+
+    localStorage.setItem(
+      'bsf_usuario_admin',
+      usuario
+    );
+
+  }
+
+}
+
+
+/*******************************************************
  * WORKER
  *******************************************************/
 
@@ -708,7 +864,8 @@ async function llamarWorker(
     await fetch(
       URL_WORKER,
       {
-        method: 'POST',
+        method:
+          'POST',
 
         headers: {
           'Content-Type':
@@ -763,28 +920,36 @@ async function iniciarPedido() {
 
   const pin =
     document
-      .getElementById('pin')
+      .getElementById(
+        'pin'
+      )
       .value
       .trim();
 
 
   const usuario =
     document
-      .getElementById('usuario')
+      .getElementById(
+        'usuario'
+      )
       .value
       .trim();
 
 
   const pedido =
     document
-      .getElementById('pedido')
+      .getElementById(
+        'pedido'
+      )
       .value
       .trim();
 
 
   const cliente =
     document
-      .getElementById('cliente')
+      .getElementById(
+        'cliente'
+      )
       .value
       .trim();
 
@@ -803,6 +968,9 @@ async function iniciarPedido() {
     return;
 
   }
+
+
+  guardarUsuarioProduccion();
 
 
   const boton =
@@ -882,39 +1050,55 @@ async function iniciarPedido() {
 
 
     document
-      .getElementById('pedidoActivo')
+      .getElementById(
+        'pedidoActivo'
+      )
       .textContent =
         operacion.pedido;
 
 
     document
-      .getElementById('clienteActivo')
+      .getElementById(
+        'clienteActivo'
+      )
       .textContent =
         operacion.cliente;
 
 
     document
-      .getElementById('usuarioActivo')
+      .getElementById(
+        'usuarioActivo'
+      )
       .textContent =
         operacion.usuario;
 
 
     document
-      .getElementById('operacionActiva')
+      .getElementById(
+        'operacionActiva'
+      )
       .textContent =
         operacion.idOperacion;
 
 
     document
-      .getElementById('pantallaInicio')
+      .getElementById(
+        'pantallaInicio'
+      )
       .classList
-      .add('oculto');
+      .add(
+        'oculto'
+      );
 
 
     document
-      .getElementById('pantallaPedido')
+      .getElementById(
+        'pantallaPedido'
+      )
       .classList
-      .remove('oculto');
+      .remove(
+        'oculto'
+      );
 
 
     mostrarOk(
@@ -956,7 +1140,9 @@ function buscarCajaManual() {
 
   const codigo =
     document
-      .getElementById('codigoManual')
+      .getElementById(
+        'codigoManual'
+      )
       .value
       .trim();
 
@@ -998,15 +1184,23 @@ function consultarCaja(
 
 
   document
-    .getElementById('tarjetaCaja')
+    .getElementById(
+      'tarjetaCaja'
+    )
     .classList
-    .add('oculto');
+    .add(
+      'oculto'
+    );
 
 
   document
-    .getElementById('cargandoCaja')
+    .getElementById(
+      'cargandoCaja'
+    )
     .classList
-    .remove('oculto');
+    .remove(
+      'oculto'
+    );
 
 
   llamarApiJsonp(
@@ -1027,9 +1221,13 @@ function consultarCaja(
 
 
       document
-        .getElementById('cargandoCaja')
+        .getElementById(
+          'cargandoCaja'
+        )
         .classList
-        .add('oculto');
+        .add(
+          'oculto'
+        );
 
 
       if (
@@ -1064,9 +1262,13 @@ function consultarCaja(
 
 
       document
-        .getElementById('cargandoCaja')
+        .getElementById(
+          'cargandoCaja'
+        )
         .classList
-        .add('oculto');
+        .add(
+          'oculto'
+        );
 
 
       mostrarError(
@@ -1087,19 +1289,25 @@ function consultarCaja(
 function mostrarCaja() {
 
   document
-    .getElementById('productoCaja')
+    .getElementById(
+      'productoCaja'
+    )
     .textContent =
       cajaActual.producto;
 
 
   document
-    .getElementById('codigoCaja')
+    .getElementById(
+      'codigoCaja'
+    )
     .textContent =
       cajaActual.codigoCaja;
 
 
   document
-    .getElementById('stockCaja')
+    .getElementById(
+      'stockCaja'
+    )
     .textContent =
       cajaActual.cantidadActual;
 
@@ -1141,21 +1349,29 @@ function mostrarCaja() {
 
 
   document
-    .getElementById('cantidadDescontar')
+    .getElementById(
+      'cantidadDescontar'
+    )
     .value =
       '';
 
 
   document
-    .getElementById('codigoManual')
+    .getElementById(
+      'codigoManual'
+    )
     .value =
       '';
 
 
   document
-    .getElementById('tarjetaCaja')
+    .getElementById(
+      'tarjetaCaja'
+    )
     .classList
-    .remove('oculto');
+    .remove(
+      'oculto'
+    );
 
 }
 
@@ -1204,13 +1420,17 @@ function prepararDescuento() {
   const cantidad =
     Number(
       document
-        .getElementById('cantidadDescontar')
+        .getElementById(
+          'cantidadDescontar'
+        )
         .value
     );
 
 
   if (
-    !Number.isInteger(cantidad) ||
+    !Number.isInteger(
+      cantidad
+    ) ||
     cantidad <= 0
   ) {
 
@@ -1251,7 +1471,9 @@ function prepararDescuento() {
 
 
   document
-    .getElementById('modalCantidad')
+    .getElementById(
+      'modalCantidad'
+    )
     .textContent =
       cantidad +
       (
@@ -1262,33 +1484,45 @@ function prepararDescuento() {
 
 
   document
-    .getElementById('modalProducto')
+    .getElementById(
+      'modalProducto'
+    )
     .textContent =
       cajaActual.producto;
 
 
   document
-    .getElementById('modalCaja')
+    .getElementById(
+      'modalCaja'
+    )
     .textContent =
       cajaActual.codigoCaja;
 
 
   document
-    .getElementById('modalAntes')
+    .getElementById(
+      'modalAntes'
+    )
     .textContent =
       cajaActual.cantidadActual;
 
 
   document
-    .getElementById('modalDespues')
+    .getElementById(
+      'modalDespues'
+    )
     .textContent =
       despues;
 
 
   document
-    .getElementById('modalDescuento')
+    .getElementById(
+      'modalDescuento'
+    )
     .classList
-    .remove('oculto');
+    .remove(
+      'oculto'
+    );
 
 }
 
@@ -1502,31 +1736,45 @@ async function pedirFinalizarPedido() {
 
 
     document
-      .getElementById('pantallaPedido')
+      .getElementById(
+        'pantallaPedido'
+      )
       .classList
-      .add('oculto');
+      .add(
+        'oculto'
+      );
 
 
     document
-      .getElementById('pantallaInicio')
+      .getElementById(
+        'pantallaInicio'
+      )
       .classList
-      .remove('oculto');
+      .remove(
+        'oculto'
+      );
 
 
     document
-      .getElementById('pedido')
+      .getElementById(
+        'pedido'
+      )
       .value =
         '';
 
 
     document
-      .getElementById('cliente')
+      .getElementById(
+        'cliente'
+      )
       .value =
         '';
 
 
     document
-      .getElementById('pin')
+      .getElementById(
+        'pin'
+      )
       .value =
         '';
 
@@ -1563,28 +1811,34 @@ async function pedirFinalizarPedido() {
 
 
 /*******************************************************
- * ADMIN - ANULAR MOVIMIENTO
+ * ADMIN - MOVIMIENTO
  *******************************************************/
 
 async function pedirAnularMovimiento() {
 
   const pin =
     document
-      .getElementById('pinAdmin')
+      .getElementById(
+        'pinAdmin'
+      )
       .value
       .trim();
 
 
   const usuario =
     document
-      .getElementById('usuarioAnulacion')
+      .getElementById(
+        'usuarioAnulacion'
+      )
       .value
       .trim();
 
 
   const movimiento =
     document
-      .getElementById('idMovimientoAnular')
+      .getElementById(
+        'idMovimientoAnular'
+      )
       .value
       .trim()
       .toUpperCase();
@@ -1603,6 +1857,9 @@ async function pedirAnularMovimiento() {
     return;
 
   }
+
+
+  guardarUsuarioAdmin();
 
 
   const confirmar =
@@ -1689,7 +1946,9 @@ async function pedirAnularMovimiento() {
 
 
     document
-      .getElementById('idMovimientoAnular')
+      .getElementById(
+        'idMovimientoAnular'
+      )
       .value =
         '';
 
@@ -1717,28 +1976,34 @@ async function pedirAnularMovimiento() {
 
 
 /*******************************************************
- * ADMIN - ANULAR PEDIDO COMPLETO
+ * ADMIN - PEDIDO COMPLETO
  *******************************************************/
 
 async function pedirAnularPedidoCompleto() {
 
   const pin =
     document
-      .getElementById('pinAdmin')
+      .getElementById(
+        'pinAdmin'
+      )
       .value
       .trim();
 
 
   const usuario =
     document
-      .getElementById('usuarioAnulacion')
+      .getElementById(
+        'usuarioAnulacion'
+      )
       .value
       .trim();
 
 
   const pedido =
     document
-      .getElementById('pedidoAnular')
+      .getElementById(
+        'pedidoAnular'
+      )
       .value
       .trim();
 
@@ -1756,6 +2021,9 @@ async function pedirAnularPedidoCompleto() {
     return;
 
   }
+
+
+  guardarUsuarioAdmin();
 
 
   const confirmar1 =
@@ -1880,7 +2148,9 @@ async function pedirAnularPedidoCompleto() {
 
 
     document
-      .getElementById('pedidoAnular')
+      .getElementById(
+        'pedidoAnular'
+      )
       .value =
         '';
 
@@ -1944,9 +2214,13 @@ function mostrarResultadoAdmin(
 function cerrarModalDescuento() {
 
   document
-    .getElementById('modalDescuento')
+    .getElementById(
+      'modalDescuento'
+    )
     .classList
-    .add('oculto');
+    .add(
+      'oculto'
+    );
 
 }
 
@@ -1956,7 +2230,9 @@ function cerrarModalDescuento() {
  *******************************************************/
 
 function cambiarCaja() {
+
   limpiarCaja();
+
 }
 
 
@@ -1971,13 +2247,19 @@ function limpiarCaja() {
 
 
   document
-    .getElementById('tarjetaCaja')
+    .getElementById(
+      'tarjetaCaja'
+    )
     .classList
-    .add('oculto');
+    .add(
+      'oculto'
+    );
 
 
   document
-    .getElementById('cantidadDescontar')
+    .getElementById(
+      'cantidadDescontar'
+    )
     .value =
       '';
 
@@ -2091,15 +2373,21 @@ async function abrirScanner() {
 
 
     document
-      .getElementById('btnScanner')
+      .getElementById(
+        'btnScanner'
+      )
       .disabled =
         true;
 
 
     document
-      .getElementById('btnCerrarScanner')
+      .getElementById(
+        'btnCerrarScanner'
+      )
       .classList
-      .remove('oculto');
+      .remove(
+        'oculto'
+      );
 
 
   } catch (error) {
@@ -2142,7 +2430,9 @@ async function cerrarScanner() {
 
 
     try {
+
       lector.clear();
+
     } catch (error) {}
 
   }
@@ -2153,27 +2443,35 @@ async function cerrarScanner() {
 
 
   document
-    .getElementById('reader')
+    .getElementById(
+      'reader'
+    )
     .innerHTML =
       '';
 
 
   document
-    .getElementById('btnScanner')
+    .getElementById(
+      'btnScanner'
+    )
     .disabled =
       false;
 
 
   document
-    .getElementById('btnCerrarScanner')
+    .getElementById(
+      'btnCerrarScanner'
+    )
     .classList
-    .add('oculto');
+    .add(
+      'oculto'
+    );
 
 }
 
 
 /*******************************************************
- * JSONP CAJAS
+ * JSONP
  *******************************************************/
 
 function llamarApiJsonp(
@@ -2353,14 +2651,18 @@ function limpiarJsonp(
 ) {
 
   try {
+
     script.remove();
+
   } catch (error) {}
 
 
   try {
+
     delete window[
       callback
     ];
+
   } catch (error) {}
 
 }
@@ -2430,7 +2732,9 @@ function mostrarError(
 function ocultarMensaje() {
 
   document
-    .getElementById('mensaje')
+    .getElementById(
+      'mensaje'
+    )
     .className =
       'oculto';
 
@@ -2442,7 +2746,11 @@ function obtenerMensajeError(
 ) {
 
   if (!error) {
-    return 'Error desconocido.';
+
+    return (
+      'Error desconocido.'
+    );
+
   }
 
 
@@ -2450,14 +2758,18 @@ function obtenerMensajeError(
     typeof error ===
     'string'
   ) {
+
     return error;
+
   }
 
 
   if (
     error.message
   ) {
+
     return error.message;
+
   }
 
 
