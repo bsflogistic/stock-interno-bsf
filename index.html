@@ -27,13 +27,28 @@
       font-family: Arial, sans-serif;
       background: #f3f4f6;
       margin: 0;
-      padding: 20px;
+      padding: 18px;
       color: #202124;
     }
 
     .contenedor {
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
+    }
+
+    .cabecera {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .cabecera h1 {
+      margin-bottom: 4px;
+      font-size: 28px;
+    }
+
+    .cabecera p {
+      margin-top: 0;
+      color: #666;
     }
 
     .tarjeta {
@@ -41,17 +56,10 @@
       border-radius: 14px;
       padding: 20px;
       margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
-
-    .subtitulo {
-      text-align: center;
-      color: #666;
+    h2 {
       margin-top: 0;
     }
 
@@ -62,7 +70,7 @@
       border-radius: 9px;
       font-size: 16px;
       font-weight: bold;
-      margin-top: 15px;
+      margin-top: 12px;
       cursor: pointer;
     }
 
@@ -86,14 +94,36 @@
       color: white;
     }
 
-    #reader {
-      margin-top: 20px;
+    .gris {
+      background: #e8eaed;
+      color: #202124;
+    }
+
+    input {
       width: 100%;
+      padding: 13px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 14px;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 15px;
+      overflow: hidden;
+      border-radius: 10px;
     }
 
     .resultado {
-      margin-top: 20px;
-      padding: 15px;
+      margin-top: 15px;
+      padding: 14px;
       border-radius: 10px;
       display: none;
     }
@@ -108,15 +138,35 @@
       color: #a50e0e;
     }
 
-    .titulo-resultado {
+    .producto {
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom: 6px;
+      margin-bottom: 15px;
     }
 
-    #textoQR {
-      font-family: monospace;
-      font-size: 16px;
-      word-break: break-all;
+    .dato {
+      margin: 9px 0;
+      font-size: 17px;
+    }
+
+    .stock {
+      font-size: 34px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .estado-en-uso {
+      color: #137333;
+      font-weight: bold;
+    }
+
+    .estado-guardada {
+      color: #b06000;
+      font-weight: bold;
+    }
+
+    .oculto {
+      display: none !important;
     }
 
   </style>
@@ -128,37 +178,35 @@
 
 <div class="contenedor">
 
-  <div class="tarjeta">
 
-    <h1>📦 STOCK INTERNO</h1>
+  <!-- CABECERA -->
 
-    <p class="subtitulo">
+  <div class="cabecera">
+
+    <h1>
+      📦 STOCK INTERNO
+    </h1>
+
+    <p>
       Producción BSF
     </p>
 
   </div>
 
 
-  <!-- ============================
-       PRUEBA DE CONEXIÓN
-       ============================ -->
+  <!-- CONEXION -->
 
   <div class="tarjeta">
 
     <h2>
-      Conexión con stock
+      Estado del sistema
     </h2>
-
-    <p>
-      Esta prueba verifica la comunicación
-      entre la aplicación y Google Sheets.
-    </p>
 
     <button
       id="btnConexion"
       class="verde"
       onclick="probarConexion()">
-      🔗 PROBAR CONEXIÓN CON STOCK
+      🔗 PROBAR CONEXIÓN
     </button>
 
     <div
@@ -169,14 +217,12 @@
   </div>
 
 
-  <!-- ============================
-       PRUEBA QR
-       ============================ -->
+  <!-- LECTOR -->
 
   <div class="tarjeta">
 
     <h2>
-      Lector QR
+      Escanear caja
     </h2>
 
     <button
@@ -190,32 +236,99 @@
 
     <button
       id="btnCerrar"
-      class="rojo"
-      onclick="cerrarScanner()"
-      style="display:none;">
+      class="rojo oculto"
+      onclick="cerrarScanner()">
       CERRAR CÁMARA
     </button>
 
 
-    <div
-      id="resultadoQR"
-      class="resultado resultado-ok">
+    <label>
+      O ingresar código manualmente
+    </label>
 
-      <div class="titulo-resultado">
-        QR leído:
-      </div>
+    <input
+      id="codigoManual"
+      type="text"
+      placeholder="Ej: CJ-000001"
+    >
 
-      <div id="textoQR"></div>
-
-    </div>
-
-
-    <div
-      id="errorQR"
-      class="resultado resultado-error">
-    </div>
+    <button
+      id="btnBuscar"
+      class="gris"
+      onclick="buscarCajaManual()">
+      BUSCAR CAJA
+    </button>
 
   </div>
+
+
+  <!-- CARGANDO -->
+
+  <div
+    id="cargando"
+    class="tarjeta oculto">
+
+    Consultando caja...
+
+  </div>
+
+
+  <!-- CAJA ENCONTRADA -->
+
+  <div
+    id="tarjetaCaja"
+    class="tarjeta oculto">
+
+    <div
+      id="productoCaja"
+      class="producto">
+    </div>
+
+    <div class="dato">
+      Caja:
+      <strong id="codigoCaja"></strong>
+    </div>
+
+    <div class="dato">
+      Estado:
+      <span id="estadoCaja"></span>
+    </div>
+
+    <div class="dato">
+      Stock actual:
+    </div>
+
+    <div
+      id="stockCaja"
+      class="stock">
+    </div>
+
+    <div class="dato">
+      Cantidad inicial:
+      <strong id="cantidadInicialCaja"></strong>
+    </div>
+
+    <div class="dato">
+      ID producto:
+      <strong id="idProductoCaja"></strong>
+    </div>
+
+    <button
+      class="azul"
+      onclick="escanearOtraCaja()">
+      📷 ESCANEAR OTRA CAJA
+    </button>
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div
+    id="errorGeneral"
+    class="resultado resultado-error">
+  </div>
+
 
 </div>
 
@@ -223,25 +336,20 @@
 <script>
 
 /*******************************************************
- * CONFIGURACIÓN
+ * CONFIGURACION
  *******************************************************/
-
-/*
- * IMPORTANTE:
- *
- * Pegá acá la URL /exec de tu Apps Script.
- *
- * Ejemplo:
- *
- * https://script.google.com/macros/s/XXXXXXXX/exec
- */
 
 const URL_APPS_SCRIPT =
   'https://script.google.com/macros/s/AKfycbzAAJJJhxkTUt99JFfadXQT2IAKmOPS4PKRudeotALBeIAMn60uSktlcty9w9kJv06f/exec';
 
 
+let lector = null;
+let scannerActivo = false;
+let consultaEnCurso = false;
+
+
 /*******************************************************
- * PRUEBA DE CONEXIÓN
+ * PING
  *******************************************************/
 
 function probarConexion() {
@@ -257,19 +365,92 @@ function probarConexion() {
     );
 
 
+  boton.disabled = true;
+  boton.textContent =
+    'CONECTANDO...';
+
   resultado.style.display =
     'none';
 
 
-  if (
-    !URL_APPS_SCRIPT ||
-    URL_APPS_SCRIPT.indexOf(
-      'PEGA_ACA'
-    ) !== -1
-  ) {
+  llamarApiJsonp(
+    {
+      accion: 'ping'
+    },
 
-    mostrarConexionError(
-      'Primero tenés que colocar la URL de Apps Script en index.html.'
+    function(datos) {
+
+      boton.disabled = false;
+
+      boton.textContent =
+        '🔗 PROBAR CONEXIÓN';
+
+
+      if (
+        datos &&
+        datos.ok
+      ) {
+
+        resultado.className =
+          'resultado resultado-ok';
+
+        resultado.innerHTML =
+          '✅ <strong>' +
+          datos.mensaje +
+          '</strong><br><br>' +
+          datos.fecha;
+
+        resultado.style.display =
+          'block';
+
+      } else {
+
+        mostrarError(
+          datos &&
+          datos.error
+            ? datos.error
+            : 'La API respondió con un error.'
+        );
+
+      }
+
+    },
+
+    function(error) {
+
+      boton.disabled = false;
+
+      boton.textContent =
+        '🔗 PROBAR CONEXIÓN';
+
+      mostrarError(
+        error
+      );
+
+    }
+  );
+
+}
+
+
+/*******************************************************
+ * BUSCAR CAJA
+ *******************************************************/
+
+function buscarCajaManual() {
+
+  const codigo =
+    document.getElementById(
+      'codigoManual'
+    )
+    .value
+    .trim();
+
+
+  if (!codigo) {
+
+    mostrarError(
+      'Ingresá un código de caja.'
     );
 
     return;
@@ -277,243 +458,216 @@ function probarConexion() {
   }
 
 
-  boton.disabled =
-    true;
-
-  boton.textContent =
-    'CONECTANDO...';
-
-
-  /*
-   * Creamos un callback único
-   * para la respuesta JSONP.
-   */
-
-  const nombreCallback =
-    'respuestaBSF_' +
-    Date.now();
-
-
-  const script =
-    document.createElement(
-      'script'
-    );
-
-
-  let timeout = null;
-
-
-  window[nombreCallback] =
-    function(datos) {
-
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-
-      try {
-
-        if (
-          datos &&
-          datos.ok
-        ) {
-
-          mostrarConexionOk(
-            '✅ ' +
-            datos.mensaje +
-            '<br><br>' +
-            'Respuesta del servidor: ' +
-            datos.fecha
-          );
-
-        } else {
-
-          mostrarConexionError(
-            datos &&
-            datos.error
-              ? datos.error
-              : 'Apps Script respondió, pero indicó un error.'
-          );
-
-        }
-
-      } finally {
-
-        limpiarPruebaConexion(
-          script,
-          nombreCallback
-        );
-
-
-        boton.disabled =
-          false;
-
-
-        boton.textContent =
-          '🔗 PROBAR CONEXIÓN CON STOCK';
-
-      }
-
-    };
-
-
-  script.onerror =
-    function() {
-
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-
-      mostrarConexionError(
-        'No se pudo conectar con Apps Script.'
-      );
-
-
-      limpiarPruebaConexion(
-        script,
-        nombreCallback
-      );
-
-
-      boton.disabled =
-        false;
-
-
-      boton.textContent =
-        '🔗 PROBAR CONEXIÓN CON STOCK';
-
-    };
-
-
-  const separador =
-    URL_APPS_SCRIPT.includes('?')
-      ? '&'
-      : '?';
-
-
-  script.src =
-    URL_APPS_SCRIPT +
-    separador +
-    'accion=ping' +
-    '&callback=' +
-    encodeURIComponent(
-      nombreCallback
-    ) +
-    '&_=' +
-    Date.now();
-
-
-  document.body.appendChild(
-    script
+  consultarCajaApi(
+    codigo
   );
-
-
-  timeout =
-    setTimeout(
-      function() {
-
-        mostrarConexionError(
-          'La conexión tardó demasiado. Revisá la implementación de Apps Script.'
-        );
-
-
-        limpiarPruebaConexion(
-          script,
-          nombreCallback
-        );
-
-
-        boton.disabled =
-          false;
-
-
-        boton.textContent =
-          '🔗 PROBAR CONEXIÓN CON STOCK';
-
-      },
-      15000
-    );
 
 }
 
 
-function limpiarPruebaConexion(
-  script,
-  callback
+/**
+ * Consulta una caja usando Apps Script.
+ */
+function consultarCajaApi(
+  codigo
 ) {
 
-  try {
+  if (
+    consultaEnCurso
+  ) {
 
-    if (
-      script &&
-      script.parentNode
-    ) {
+    return;
 
-      script.parentNode.removeChild(
-        script
+  }
+
+
+  consultaEnCurso =
+    true;
+
+
+  ocultarError();
+
+
+  document.getElementById(
+    'tarjetaCaja'
+  ).classList.add(
+    'oculto'
+  );
+
+
+  document.getElementById(
+    'cargando'
+  ).classList.remove(
+    'oculto'
+  );
+
+
+  llamarApiJsonp(
+
+    {
+      accion:
+        'consultarCaja',
+
+      codigo:
+        codigo
+    },
+
+
+    function(datos) {
+
+      consultaEnCurso =
+        false;
+
+
+      document.getElementById(
+        'cargando'
+      ).classList.add(
+        'oculto'
+      );
+
+
+      if (
+        !datos ||
+        !datos.ok
+      ) {
+
+        mostrarError(
+          datos &&
+          datos.error
+            ? datos.error
+            : 'No se pudo consultar la caja.'
+        );
+
+        return;
+
+      }
+
+
+      mostrarCaja(
+        datos.caja
+      );
+
+    },
+
+
+    function(error) {
+
+      consultaEnCurso =
+        false;
+
+
+      document.getElementById(
+        'cargando'
+      ).classList.add(
+        'oculto'
+      );
+
+
+      mostrarError(
+        error
       );
 
     }
 
-  } catch (e) {}
-
-
-  try {
-
-    delete window[
-      callback
-    ];
-
-  } catch (e) {}
+  );
 
 }
 
 
-function mostrarConexionOk(
-  texto
+/*******************************************************
+ * MOSTRAR CAJA
+ *******************************************************/
+
+function mostrarCaja(
+  caja
 ) {
 
-  const elemento =
+  if (!caja) {
+
+    mostrarError(
+      'Apps Script no devolvió información de la caja.'
+    );
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    'productoCaja'
+  ).textContent =
+    caja.producto;
+
+
+  document.getElementById(
+    'codigoCaja'
+  ).textContent =
+    caja.codigoCaja;
+
+
+  const estado =
     document.getElementById(
-      'resultadoConexion'
+      'estadoCaja'
     );
 
 
-  elemento.className =
-    'resultado resultado-ok';
+  estado.textContent =
+    caja.estado;
 
 
-  elemento.innerHTML =
-    texto;
+  estado.className =
+    '';
 
 
-  elemento.style.display =
-    'block';
+  if (
+    String(caja.estado)
+      .trim()
+      .toUpperCase() ===
+    'EN USO'
+  ) {
 
-}
-
-
-function mostrarConexionError(
-  texto
-) {
-
-  const elemento =
-    document.getElementById(
-      'resultadoConexion'
+    estado.classList.add(
+      'estado-en-uso'
     );
 
+  } else {
 
-  elemento.className =
-    'resultado resultado-error';
+    estado.classList.add(
+      'estado-guardada'
+    );
+
+  }
 
 
-  elemento.textContent =
-    '⚠️ ' + texto;
+  document.getElementById(
+    'stockCaja'
+  ).textContent =
+    caja.cantidadActual;
 
 
-  elemento.style.display =
-    'block';
+  document.getElementById(
+    'cantidadInicialCaja'
+  ).textContent =
+    caja.cantidadInicial;
+
+
+  document.getElementById(
+    'idProductoCaja'
+  ).textContent =
+    caja.idProducto;
+
+
+  document.getElementById(
+    'tarjetaCaja'
+  ).classList.remove(
+    'oculto'
+  );
+
+
+  document.getElementById(
+    'codigoManual'
+  ).value =
+    '';
 
 }
 
@@ -522,21 +676,17 @@ function mostrarConexionError(
  * LECTOR QR
  *******************************************************/
 
-let lector =
-  null;
-
-
-let activo =
-  false;
-
-
 async function abrirScanner() {
 
-  ocultarMensajesQR();
+  ocultarError();
 
 
-  if (activo) {
+  if (
+    scannerActivo
+  ) {
+
     return;
+
   }
 
 
@@ -555,40 +705,87 @@ async function abrirScanner() {
           'environment'
       },
 
+
       {
         fps: 10,
 
-        qrbox: {
-          width: 250,
-          height: 250
-        }
+        qrbox:
+          function(
+            width,
+            height
+          ) {
+
+            const minimo =
+              Math.min(
+                width,
+                height
+              );
+
+
+            const tamaño =
+              Math.floor(
+                minimo * 0.70
+              );
+
+
+            return {
+
+              width:
+                tamaño,
+
+              height:
+                tamaño
+
+            };
+
+          }
+
       },
+
 
       function(
         decodedText
       ) {
 
-        document.getElementById(
-          'textoQR'
-        ).textContent =
-          decodedText;
+        if (
+          !scannerActivo
+        ) {
+
+          return;
+
+        }
 
 
-        document.getElementById(
-          'resultadoQR'
-        ).style.display =
-          'block';
+        scannerActivo =
+          false;
 
 
-        cerrarScanner();
+        /*
+         * Primero cerramos cámara.
+         */
+        cerrarScanner()
+          .then(
+            function() {
+
+              /*
+               * Después consultamos
+               * automáticamente la caja.
+               */
+              consultarCajaApi(
+                decodedText
+              );
+
+            }
+          );
 
       },
+
 
       function() {
 
         /*
-         * Ignoramos errores normales
-         * mientras busca un QR.
+         * Ignoramos los errores normales
+         * mientras busca QR.
          */
 
       }
@@ -596,7 +793,7 @@ async function abrirScanner() {
     );
 
 
-    activo =
+    scannerActivo =
       true;
 
 
@@ -608,15 +805,22 @@ async function abrirScanner() {
 
     document.getElementById(
       'btnCerrar'
-    ).style.display =
-      'block';
+    ).classList.remove(
+      'oculto'
+    );
 
 
   } catch (error) {
 
-    mostrarErrorQR(
-      error.message ||
-      error
+    scannerActivo =
+      false;
+
+
+    mostrarError(
+      'No se pudo abrir la cámara: ' +
+      obtenerMensajeError(
+        error
+      )
     );
 
   }
@@ -624,35 +828,47 @@ async function abrirScanner() {
 }
 
 
+/**
+ * Detiene la cámara.
+ */
 async function cerrarScanner() {
 
-  if (
-    lector &&
-    activo
-  ) {
+  scannerActivo =
+    false;
+
+
+  if (lector) {
 
     try {
 
-      await lector.stop();
+      if (
+        lector.isScanning
+      ) {
 
-    } catch (e) {}
+        await lector.stop();
+
+      }
+
+    } catch (error) {}
 
 
     try {
 
       lector.clear();
 
-    } catch (e) {}
+    } catch (error) {}
 
   }
 
 
-  activo =
-    false;
-
-
   lector =
     null;
+
+
+  document.getElementById(
+    'reader'
+  ).innerHTML =
+    '';
 
 
   document.getElementById(
@@ -663,51 +879,334 @@ async function cerrarScanner() {
 
   document.getElementById(
     'btnCerrar'
-  ).style.display =
-    'none';
-
-
-  document.getElementById(
-    'reader'
-  ).innerHTML =
-    '';
+  ).classList.add(
+    'oculto'
+  );
 
 }
 
 
-function mostrarErrorQR(
-  texto
+/**
+ * Limpia caja y vuelve al scanner.
+ */
+function escanearOtraCaja() {
+
+  document.getElementById(
+    'tarjetaCaja'
+  ).classList.add(
+    'oculto'
+  );
+
+
+  abrirScanner();
+
+}
+
+
+/*******************************************************
+ * JSONP
+ *******************************************************/
+
+/**
+ * Hace una consulta GET/JSONP
+ * hacia Apps Script.
+ *
+ * Por ahora solo la usamos
+ * para operaciones de lectura.
+ */
+function llamarApiJsonp(
+  parametros,
+  exito,
+  fallo
 ) {
 
-  const error =
-    document.getElementById(
-      'errorQR'
+  const nombreCallback =
+    'bsfCallback_' +
+    Date.now() +
+    '_' +
+    Math.floor(
+      Math.random() *
+      100000
     );
 
 
-  error.textContent =
+  const script =
+    document.createElement(
+      'script'
+    );
+
+
+  let terminado =
+    false;
+
+
+  let timeout =
+    null;
+
+
+  window[
+    nombreCallback
+  ] =
+    function(datos) {
+
+      if (
+        terminado
+      ) {
+
+        return;
+
+      }
+
+
+      terminado =
+        true;
+
+
+      if (
+        timeout
+      ) {
+
+        clearTimeout(
+          timeout
+        );
+
+      }
+
+
+      limpiarJsonp(
+        script,
+        nombreCallback
+      );
+
+
+      exito(
+        datos
+      );
+
+  };
+
+
+  script.onerror =
+    function() {
+
+      if (
+        terminado
+      ) {
+
+        return;
+
+      }
+
+
+      terminado =
+        true;
+
+
+      if (
+        timeout
+      ) {
+
+        clearTimeout(
+          timeout
+        );
+
+      }
+
+
+      limpiarJsonp(
+        script,
+        nombreCallback
+      );
+
+
+      fallo(
+        'No se pudo conectar con Apps Script.'
+      );
+
+  };
+
+
+  const query =
+    new URLSearchParams();
+
+
+  Object.keys(
+    parametros
+  ).forEach(
+    function(clave) {
+
+      query.set(
+        clave,
+        parametros[clave]
+      );
+
+    }
+  );
+
+
+  query.set(
+    'callback',
+    nombreCallback
+  );
+
+
+  query.set(
+    '_',
+    Date.now()
+  );
+
+
+  script.src =
+    URL_APPS_SCRIPT +
+    '?' +
+    query.toString();
+
+
+  document.body.appendChild(
+    script
+  );
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        if (
+          terminado
+        ) {
+
+          return;
+
+        }
+
+
+        terminado =
+          true;
+
+
+        limpiarJsonp(
+          script,
+          nombreCallback
+        );
+
+
+        fallo(
+          'La consulta tardó demasiado.'
+        );
+
+      },
+      15000
+    );
+
+}
+
+
+/**
+ * Limpia callback y script temporal.
+ */
+function limpiarJsonp(
+  script,
+  callback
+) {
+
+  try {
+
+    if (
+      script &&
+      script.parentNode
+    ) {
+
+      script.parentNode
+        .removeChild(
+          script
+        );
+
+    }
+
+  } catch (e) {}
+
+
+  try {
+
+    delete window[
+      callback
+    ];
+
+  } catch (e) {}
+
+}
+
+
+/*******************************************************
+ * ERRORES
+ *******************************************************/
+
+function mostrarError(
+  mensaje
+) {
+
+  const elemento =
+    document.getElementById(
+      'errorGeneral'
+    );
+
+
+  elemento.textContent =
     '⚠️ ' +
-    texto;
+    mensaje;
 
 
-  error.style.display =
+  elemento.style.display =
     'block';
 
 }
 
 
-function ocultarMensajesQR() {
+function ocultarError() {
 
   document.getElementById(
-    'errorQR'
+    'errorGeneral'
   ).style.display =
     'none';
 
+}
 
-  document.getElementById(
-    'resultadoQR'
-  ).style.display =
-    'none';
+
+function obtenerMensajeError(
+  error
+) {
+
+  if (!error) {
+
+    return (
+      'Error desconocido.'
+    );
+
+  }
+
+
+  if (
+    typeof error ===
+    'string'
+  ) {
+
+    return error;
+
+  }
+
+
+  if (
+    error.message
+  ) {
+
+    return error.message;
+
+  }
+
+
+  return String(
+    error
+  );
 
 }
 
