@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Prueba QR BSF</title>
+
+  <script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript">
+  </script>
+
+  <style>
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+      color: #202124;
+    }
+
+    .contenedor {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .tarjeta {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 9px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    .azul {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .rojo {
+      background: #d93025;
+      color: white;
+    }
+
+    #reader {
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #e6f4ea;
+      display: none;
+    }
+
+    #error {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #fce8e6;
+      color: #a50e0e;
+      display: none;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="contenedor">
+
+    <div class="tarjeta">
+
+      <h1>📦 Prueba QR BSF</h1>
+
+      <button
+        id="btnAbrir"
+        class="azul"
+        onclick="abrirScanner()">
+        📷 ESCANEAR QR
+      </button>
+
+      <div id="reader"></div>
+
+      <button
+        id="btnCerrar"
+        class="rojo"
+        onclick="cerrarScanner()"
+        style="display:none;">
+        CERRAR CÁMARA
+      </button>
+
+      <div id="resultado">
+        <strong>QR leído:</strong>
+        <div id="textoResultado"></div>
+      </div>
+
+      <div id="error"></div>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    let lector = null;
+    let activo = false;
+
+
+    async function abrirScanner() {
+
+      ocultarMensajes();
+
+      if (activo) {
+        return;
+      }
+
+      try {
+
+        lector =
+          new Html5Qrcode(
+            'reader'
+          );
+
+        await lector.start(
+
+          {
+            facingMode:
+              'environment'
+          },
+
+          {
+            fps: 10,
+            qrbox: {
+              width: 250,
+              height: 250
+            }
+          },
+
+          function(decodedText) {
+
+            document.getElementById(
+              'textoResultado'
+            ).textContent =
+              decodedText;
+
+            document.getElementById(
+              'resultado'
+            ).style.display =
+              'block';
+
+            cerrarScanner();
+
+          },
+
+          function() {
+            // Ignoramos errores normales mientras busca QR
+          }
+
+        );
+
+        activo = true;
+
+        document.getElementById(
+          'btnAbrir'
+        ).disabled = true;
+
+        document.getElementById(
+          'btnCerrar'
+        ).style.display = 'block';
+
+      } catch (error) {
+
+        mostrarError(
+          error.message || error
+        );
+
+      }
+
+    }
+
+
+    async function cerrarScanner() {
+
+      if (
+        lector &&
+        activo
+      ) {
+
+        try {
+
+          await lector.stop();
+
+        } catch (e) {}
+
+        try {
+
+          lector.clear();
+
+        } catch (e) {}
+
+      }
+
+      activo = false;
+
+      lector = null;
+
+      document.getElementById(
+        'btnAbrir'
+      ).disabled = false;
+
+      document.getElementById(
+        'btnCerrar'
+      ).style.display = 'none';
+
+      document.getElementById(
+        'reader'
+      ).innerHTML = '';
+
+    }
+
+
+    function mostrarError(texto) {
+
+      const error =
+        document.getElementById(
+          'error'
+        );
+
+      error.textContent =
+        '⚠️ ' + texto;
+
+      error.style.display =
+        'block';
+
+    }
+
+
+    function ocultarMensajes() {
+
+      document.getElementById(
+        'error'
+      ).style.display =
+        'none';
+
+      document.getElementById(
+        'resultado'
+      ).style.display =
+        'none';
+
+    }
+
+  </script>
+
+</body>
+
+</html>
