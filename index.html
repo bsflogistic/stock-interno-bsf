@@ -125,6 +125,43 @@ button:disabled {
   display: none !important;
 }
 
+.menu-principal {
+  margin-top: 20px;
+}
+
+.menu-boton {
+  min-height: 80px;
+  font-size: 20px;
+  border-radius: 14px;
+  margin-top: 12px;
+}
+
+.menu-produccion {
+  background: #188038;
+  color: white;
+}
+
+.menu-consulta {
+  background: #1a73e8;
+  color: white;
+}
+
+.menu-admin {
+  background: #202124;
+  color: white;
+}
+
+.titulo-seccion {
+  text-align: center;
+  margin-top: 0;
+}
+
+.volver {
+  margin-bottom: 15px;
+  background: #e8eaed;
+  color: #202124;
+}
+
 .pedido-activo {
   background: #e6f4ea;
   border: 1px solid #34a853;
@@ -312,9 +349,14 @@ button:disabled {
 
 <div class="contenedor">
 
+
+  <!-- CABECERA -->
+
   <div class="cabecera">
 
-    <h1>📦 STOCK INTERNO</h1>
+    <h1>
+      📦 STOCK INTERNO
+    </h1>
 
     <p>
       Producción BSF
@@ -329,426 +371,514 @@ button:disabled {
   </div>
 
 
-  <!-- NUEVO PEDIDO -->
+  <!-- =================================================
+       MENU PRINCIPAL
+       ================================================= -->
 
   <div
-    id="pantallaInicio"
-    class="tarjeta">
+    id="menuPrincipal"
+    class="menu-principal">
 
-    <h2>
-      Nuevo pedido
-    </h2>
+    <div class="tarjeta">
 
-
-    <label>
-      PIN de producción
-    </label>
-
-    <input
-      id="pin"
-      type="password"
-      inputmode="numeric"
-      autocomplete="off"
-      placeholder="PIN"
-    >
-
-
-    <label>
-      Usuario
-    </label>
-
-    <select
-      id="usuario"
-      onchange="guardarUsuarioProduccion()">
-
-      <option value="">
-        Seleccionar usuario
-      </option>
-
-      <option value="Facundo">
-        Facundo
-      </option>
-
-      <option value="Candelaria">
-        Candelaria
-      </option>
-
-      <option value="Joni Finanzas">
-        Joni Finanzas
-      </option>
-
-      <option value="Jonas">
-        Jonas
-      </option>
-
-    </select>
-
-
-    <label>
-      Número de pedido
-    </label>
-
-    <input
-      id="pedido"
-      type="text"
-      placeholder="Ej: 6475"
-    >
-
-
-    <label>
-      Cliente
-    </label>
-
-    <input
-      id="cliente"
-      type="text"
-      placeholder="Ej: Jardín Espacial"
-    >
-
-
-    <button
-      id="btnIniciar"
-      class="verde"
-      onclick="iniciarPedido()">
-      INICIAR PEDIDO
-    </button>
-
-  </div>
-
-
-  <!-- VER PEDIDO -->
-
-  <div
-    class="tarjeta">
-
-    <h2>
-      🔎 Ver pedido
-    </h2>
-
-    <p>
-      Consultá qué productos ya fueron descontados.
-    </p>
-
-
-    <label>
-      Número de pedido
-    </label>
-
-    <input
-      id="pedidoConsultar"
-      type="text"
-      placeholder="Ej: 6475"
-    >
-
-
-    <button
-      id="btnConsultarPedido"
-      class="azul"
-      onclick="buscarPedido()">
-      VER PEDIDO
-    </button>
-
-
-    <div
-      id="cargandoPedido"
-      class="cargando oculto">
-
-      Buscando pedido...
-
-    </div>
-
-
-    <div
-      id="resultadoPedido"
-      class="oculto">
-    </div>
-
-  </div>
-
-
-  <!-- PEDIDO ACTIVO -->
-
-  <div
-    id="pantallaPedido"
-    class="oculto">
-
-
-    <div
-      class="tarjeta pedido-activo">
-
-      <strong>
-        🟢 PEDIDO ACTIVO
-      </strong>
-
-      <div class="dato">
-        Pedido:
-        <strong id="pedidoActivo"></strong>
-      </div>
-
-      <div class="dato">
-        Cliente:
-        <strong id="clienteActivo"></strong>
-      </div>
-
-      <div class="dato">
-        Usuario:
-        <strong id="usuarioActivo"></strong>
-      </div>
-
-      <div class="dato">
-        Operación:
-        <strong id="operacionActiva"></strong>
-      </div>
-
-    </div>
-
-
-    <div
-      id="tarjetaEscaneo"
-      class="tarjeta">
-
-      <h2>
-        Escanear caja
+      <h2 class="titulo-seccion">
+        ¿Qué querés hacer?
       </h2>
 
       <button
-        id="btnScanner"
-        class="azul"
-        onclick="abrirScanner()">
-        📷 ESCANEAR QR
+        class="menu-boton menu-produccion"
+        onclick="abrirProduccion()">
+        📦 PRODUCCIÓN
       </button>
 
-
-      <div id="reader"></div>
-
-
       <button
-        id="btnCerrarScanner"
-        class="rojo oculto"
-        onclick="cerrarScanner()">
-        CERRAR CÁMARA
+        class="menu-boton menu-consulta"
+        onclick="abrirVerPedido()">
+        🔎 VER PEDIDO
       </button>
 
-
-      <label>
-        O ingresar código
-      </label>
-
-      <input
-        id="codigoManual"
-        type="text"
-        placeholder="Ej: CJ-000001"
-      >
-
       <button
-        class="gris"
-        onclick="buscarCajaManual()">
-        BUSCAR CAJA
+        class="menu-boton menu-admin"
+        onclick="abrirAdministrador()">
+        🔐 ADMINISTRADOR
       </button>
 
     </div>
 
+  </div>
+
+
+  <!-- =================================================
+       PRODUCCION
+       ================================================= -->
+
+  <div
+    id="seccionProduccion"
+    class="oculto">
+
+    <button
+      class="volver"
+      onclick="volverMenu()">
+      ← VOLVER AL MENÚ
+    </button>
+
+
+    <!-- NUEVO PEDIDO -->
 
     <div
-      id="cargandoCaja"
-      class="tarjeta cargando oculto">
+      id="pantallaInicio"
+      class="tarjeta">
 
-      Consultando caja...
-
-    </div>
-
-
-    <div
-      id="tarjetaCaja"
-      class="tarjeta oculto">
-
-
-      <div
-        id="productoCaja"
-        class="producto">
-      </div>
-
-
-      <div class="dato">
-        Caja:
-        <strong id="codigoCaja"></strong>
-      </div>
-
-
-      <div class="dato">
-        Estado:
-        <span id="estadoCaja"></span>
-      </div>
-
-
-      <div class="dato">
-        Stock actual:
-      </div>
-
-
-      <div
-        id="stockCaja"
-        class="stock">
-      </div>
+      <h2>
+        📦 Nuevo pedido
+      </h2>
 
 
       <label>
-        Packings a descontar
+        PIN de producción
       </label>
 
       <input
-        id="cantidadDescontar"
-        type="number"
+        id="pin"
+        type="password"
         inputmode="numeric"
-        min="1"
-        step="1"
-        placeholder="Ej: 4"
+        autocomplete="off"
+        placeholder="PIN"
+      >
+
+
+      <label>
+        Usuario
+      </label>
+
+      <select
+        id="usuario"
+        onchange="guardarUsuarioProduccion()">
+
+        <option value="">
+          Seleccionar usuario
+        </option>
+
+        <option value="Facundo">
+          Facundo
+        </option>
+
+        <option value="Candelaria">
+          Candelaria
+        </option>
+
+        <option value="Joni Finanzas">
+          Joni Finanzas
+        </option>
+
+        <option value="Jonas">
+          Jonas
+        </option>
+
+      </select>
+
+
+      <label>
+        Número de pedido
+      </label>
+
+      <input
+        id="pedido"
+        type="text"
+        placeholder="Ej: 6475"
+      >
+
+
+      <label>
+        Cliente
+      </label>
+
+      <input
+        id="cliente"
+        type="text"
+        placeholder="Ej: Jardín Espacial"
       >
 
 
       <button
-        id="btnPreparar"
+        id="btnIniciar"
         class="verde"
-        onclick="prepararDescuento()">
-        CONFIRMAR DESCUENTO
-      </button>
-
-
-      <button
-        class="gris"
-        onclick="cambiarCaja()">
-        CAMBIAR CAJA
+        onclick="iniciarPedido()">
+        INICIAR PEDIDO
       </button>
 
     </div>
+
+
+    <!-- PEDIDO ACTIVO -->
+
+    <div
+      id="pantallaPedido"
+      class="oculto">
+
+
+      <div
+        class="tarjeta pedido-activo">
+
+        <strong>
+          🟢 PEDIDO ACTIVO
+        </strong>
+
+        <div class="dato">
+          Pedido:
+          <strong id="pedidoActivo"></strong>
+        </div>
+
+        <div class="dato">
+          Cliente:
+          <strong id="clienteActivo"></strong>
+        </div>
+
+        <div class="dato">
+          Usuario:
+          <strong id="usuarioActivo"></strong>
+        </div>
+
+        <div class="dato">
+          Operación:
+          <strong id="operacionActiva"></strong>
+        </div>
+
+      </div>
+
+
+      <!-- ESCANEAR -->
+
+      <div
+        id="tarjetaEscaneo"
+        class="tarjeta">
+
+        <h2>
+          Escanear caja
+        </h2>
+
+        <button
+          id="btnScanner"
+          class="azul"
+          onclick="abrirScanner()">
+          📷 ESCANEAR QR
+        </button>
+
+
+        <div id="reader"></div>
+
+
+        <button
+          id="btnCerrarScanner"
+          class="rojo oculto"
+          onclick="cerrarScanner()">
+          CERRAR CÁMARA
+        </button>
+
+
+        <label>
+          O ingresar código
+        </label>
+
+        <input
+          id="codigoManual"
+          type="text"
+          placeholder="Ej: CJ-000001"
+        >
+
+        <button
+          class="gris"
+          onclick="buscarCajaManual()">
+          BUSCAR CAJA
+        </button>
+
+      </div>
+
+
+      <div
+        id="cargandoCaja"
+        class="tarjeta cargando oculto">
+
+        Consultando caja...
+
+      </div>
+
+
+      <!-- CAJA ENCONTRADA -->
+
+      <div
+        id="tarjetaCaja"
+        class="tarjeta oculto">
+
+
+        <div
+          id="productoCaja"
+          class="producto">
+        </div>
+
+
+        <div class="dato">
+          Caja:
+          <strong id="codigoCaja"></strong>
+        </div>
+
+
+        <div class="dato">
+          Estado:
+          <span id="estadoCaja"></span>
+        </div>
+
+
+        <div class="dato">
+          Stock actual:
+        </div>
+
+
+        <div
+          id="stockCaja"
+          class="stock">
+        </div>
+
+
+        <label>
+          Packings a descontar
+        </label>
+
+        <input
+          id="cantidadDescontar"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          step="1"
+          placeholder="Ej: 4"
+        >
+
+
+        <button
+          id="btnPreparar"
+          class="verde"
+          onclick="prepararDescuento()">
+          CONFIRMAR DESCUENTO
+        </button>
+
+
+        <button
+          class="gris"
+          onclick="cambiarCaja()">
+          CAMBIAR CAJA
+        </button>
+
+      </div>
+
+
+      <!-- FINALIZAR -->
+
+      <div class="tarjeta">
+
+        <button
+          id="btnFinalizar"
+          class="rojo"
+          onclick="pedirFinalizarPedido()">
+          FINALIZAR PEDIDO
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       VER PEDIDO
+       ================================================= -->
+
+  <div
+    id="seccionVerPedido"
+    class="oculto">
+
+    <button
+      class="volver"
+      onclick="volverMenu()">
+      ← VOLVER AL MENÚ
+    </button>
 
 
     <div class="tarjeta">
 
+      <h2>
+        🔎 Ver pedido
+      </h2>
+
+      <p>
+        Consultá qué productos fueron descontados.
+      </p>
+
+
+      <label>
+        Número de pedido
+      </label>
+
+      <input
+        id="pedidoConsultar"
+        type="text"
+        placeholder="Ej: 6475"
+      >
+
+
       <button
-        id="btnFinalizar"
-        class="rojo"
-        onclick="pedirFinalizarPedido()">
-        FINALIZAR PEDIDO
+        id="btnConsultarPedido"
+        class="azul"
+        onclick="buscarPedido()">
+        BUSCAR PEDIDO
       </button>
+
+
+      <div
+        id="cargandoPedido"
+        class="cargando oculto">
+
+        Buscando pedido...
+
+      </div>
+
+
+      <div
+        id="resultadoPedido"
+        class="oculto">
+      </div>
 
     </div>
 
   </div>
 
 
-  <!-- ADMIN -->
+  <!-- =================================================
+       ADMINISTRADOR
+       ================================================= -->
 
   <div
-    id="tarjetaAdmin"
-    class="tarjeta admin">
-
-    <h2>
-      🔐 Administrador
-    </h2>
-
-    <p>
-      Herramientas de anulación.
-    </p>
-
-
-    <label>
-      PIN administrador
-    </label>
-
-    <input
-      id="pinAdmin"
-      type="password"
-      inputmode="numeric"
-      autocomplete="off"
-      placeholder="PIN administrador"
-    >
-
-
-    <label>
-      Usuario que anula
-    </label>
-
-    <select
-      id="usuarioAnulacion"
-      onchange="guardarUsuarioAdmin()">
-
-      <option value="">
-        Seleccionar usuario
-      </option>
-
-      <option value="Facundo">
-        Facundo
-      </option>
-
-      <option value="Candelaria">
-        Candelaria
-      </option>
-
-      <option value="Joni Finanzas">
-        Joni Finanzas
-      </option>
-
-      <option value="Jonas">
-        Jonas
-      </option>
-
-    </select>
-
-
-    <hr class="separador">
-
-
-    <h3>
-      Anular movimiento
-    </h3>
-
-    <label>
-      ID movimiento
-    </label>
-
-    <input
-      id="idMovimientoAnular"
-      type="text"
-      placeholder="Ej: MOV-000001"
-    >
+    id="seccionAdministrador"
+    class="oculto">
 
     <button
-      id="btnAnularMovimiento"
-      class="naranja"
-      onclick="pedirAnularMovimiento()">
-      ANULAR MOVIMIENTO
-    </button>
-
-
-    <hr class="separador">
-
-
-    <h3>
-      Anular pedido completo
-    </h3>
-
-    <label>
-      Número de pedido
-    </label>
-
-    <input
-      id="pedidoAnular"
-      type="text"
-      placeholder="Ej: 6475"
-    >
-
-    <button
-      id="btnAnularPedido"
-      class="rojo"
-      onclick="pedirAnularPedidoCompleto()">
-      ANULAR PEDIDO COMPLETO
+      class="volver"
+      onclick="volverMenu()">
+      ← VOLVER AL MENÚ
     </button>
 
 
     <div
-      id="resultadoAdmin"
-      class="resultado-admin oculto">
+      class="tarjeta admin">
+
+      <h2>
+        🔐 Administrador
+      </h2>
+
+      <p>
+        Herramientas de anulación.
+      </p>
+
+
+      <label>
+        PIN administrador
+      </label>
+
+      <input
+        id="pinAdmin"
+        type="password"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="PIN administrador"
+      >
+
+
+      <label>
+        Usuario que anula
+      </label>
+
+      <select
+        id="usuarioAnulacion"
+        onchange="guardarUsuarioAdmin()">
+
+        <option value="">
+          Seleccionar usuario
+        </option>
+
+        <option value="Facundo">
+          Facundo
+        </option>
+
+        <option value="Candelaria">
+          Candelaria
+        </option>
+
+        <option value="Joni Finanzas">
+          Joni Finanzas
+        </option>
+
+        <option value="Jonas">
+          Jonas
+        </option>
+
+      </select>
+
+
+      <hr class="separador">
+
+
+      <h3>
+        Anular movimiento
+      </h3>
+
+      <label>
+        ID movimiento
+      </label>
+
+      <input
+        id="idMovimientoAnular"
+        type="text"
+        placeholder="Ej: MOV-000001"
+      >
+
+      <button
+        id="btnAnularMovimiento"
+        class="naranja"
+        onclick="pedirAnularMovimiento()">
+        ANULAR MOVIMIENTO
+      </button>
+
+
+      <hr class="separador">
+
+
+      <h3>
+        Anular pedido completo
+      </h3>
+
+      <label>
+        Número de pedido
+      </label>
+
+      <input
+        id="pedidoAnular"
+        type="text"
+        placeholder="Ej: 6475"
+      >
+
+      <button
+        id="btnAnularPedido"
+        class="rojo"
+        onclick="pedirAnularPedidoCompleto()">
+        ANULAR PEDIDO COMPLETO
+      </button>
+
+
+      <div
+        id="resultadoAdmin"
+        class="resultado-admin oculto">
+      </div>
+
     </div>
 
   </div>
@@ -756,7 +886,9 @@ button:disabled {
 </div>
 
 
-<!-- MODAL DESCUENTO -->
+<!-- =================================================
+     MODAL DESCUENTO
+     ================================================= -->
 
 <div
   id="modalDescuento"
@@ -838,12 +970,173 @@ const URL_APPS_SCRIPT =
 
 
 let operacion = null;
+
 let cajaActual = null;
+
 let cantidadPendiente = 0;
+
 let lector = null;
+
 let scannerActivo = false;
+
 let consultaEnCurso = false;
+
 let operacionEnCurso = false;
+
+
+/*******************************************************
+ * NAVEGACION
+ *******************************************************/
+
+function ocultarSecciones() {
+
+  document
+    .getElementById(
+      'menuPrincipal'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  document
+    .getElementById(
+      'seccionProduccion'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  document
+    .getElementById(
+      'seccionVerPedido'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  document
+    .getElementById(
+      'seccionAdministrador'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+}
+
+
+function abrirProduccion() {
+
+  ocultarMensaje();
+
+  ocultarSecciones();
+
+
+  document
+    .getElementById(
+      'seccionProduccion'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+}
+
+
+function abrirVerPedido() {
+
+  ocultarMensaje();
+
+  ocultarSecciones();
+
+
+  document
+    .getElementById(
+      'seccionVerPedido'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+}
+
+
+function abrirAdministrador() {
+
+  ocultarMensaje();
+
+  ocultarSecciones();
+
+
+  document
+    .getElementById(
+      'seccionAdministrador'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+}
+
+
+async function volverMenu() {
+
+  ocultarMensaje();
+
+
+  /*
+   * Cerramos cámara si estaba activa.
+   */
+  await cerrarScanner();
+
+
+  ocultarSecciones();
+
+
+  document
+    .getElementById(
+      'menuPrincipal'
+    )
+    .classList
+    .remove(
+      'oculto'
+    );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+}
 
 
 /*******************************************************
@@ -985,18 +1278,22 @@ async function llamarWorker(
     await fetch(
       URL_WORKER,
       {
+
         method:
           'POST',
 
         headers: {
+
           'Content-Type':
             'application/json'
+
         },
 
         body:
           JSON.stringify(
             datos
           )
+
       }
     );
 
@@ -1028,6 +1325,9 @@ async function llamarWorker(
  *******************************************************/
 
 function buscarPedido() {
+
+  ocultarMensaje();
+
 
   const pedido =
     document
@@ -1102,7 +1402,7 @@ function buscarPedido() {
 
 
       boton.textContent =
-        'VER PEDIDO';
+        'BUSCAR PEDIDO';
 
 
       document
@@ -1145,7 +1445,7 @@ function buscarPedido() {
 
 
       boton.textContent =
-        'VER PEDIDO';
+        'BUSCAR PEDIDO';
 
 
       document
@@ -1170,7 +1470,7 @@ function buscarPedido() {
 
 
 /*******************************************************
- * MOSTRAR PEDIDO
+ * MOSTRAR PEDIDO CONSULTADO
  *******************************************************/
 
 function mostrarPedidoConsultado(
@@ -1186,10 +1486,6 @@ function mostrarPedidoConsultado(
   contenedor.innerHTML =
     '';
 
-
-  /*****************************************************
-   * RESUMEN
-   *****************************************************/
 
   const resumen =
     document.createElement(
@@ -1256,273 +1552,266 @@ function mostrarPedidoConsultado(
   );
 
 
-  /*****************************************************
-   * OPERACIONES
-   *****************************************************/
+  pedido.operaciones
+    .forEach(
+      function(op) {
 
-  pedido.operaciones.forEach(
-    function(op) {
-
-      const tarjetaOperacion =
-        document.createElement(
-          'div'
-        );
-
-
-      tarjetaOperacion.className =
-        'operacion-card';
-
-
-      let claseEstado =
-        '';
-
-
-      if (
-        op.estado ===
-        'ACTIVO'
-      ) {
-
-        claseEstado =
-          'estado-activo';
-
-      }
-
-
-      if (
-        op.estado ===
-        'ANULADO'
-      ) {
-
-        claseEstado =
-          'estado-anulado';
-
-      }
-
-
-      if (
-        op.estado ===
-        'FINALIZADO'
-      ) {
-
-        claseEstado =
-          'estado-finalizado';
-
-      }
-
-
-      tarjetaOperacion.innerHTML =
-
-        '<div class="operacion-titulo">' +
-          escaparHtml(
-            op.idOperacion
-          ) +
-        '</div>' +
-
-        '<div class="dato">' +
-          'Estado: <span class="' +
-          claseEstado +
-          '">' +
-          escaparHtml(
-            op.estado
-          ) +
-          '</span>' +
-        '</div>' +
-
-        '<div class="dato">' +
-          'Fecha: <strong>' +
-          escaparHtml(
-            op.fecha
-          ) +
-          '</strong>' +
-        '</div>' +
-
-        '<div class="dato">' +
-          'Usuario: <strong>' +
-          escaparHtml(
-            op.usuario
-          ) +
-          '</strong>' +
-        '</div>';
-
-
-      /*************************************************
-       * SIN MOVIMIENTOS
-       *************************************************/
-
-      if (
-        !Array.isArray(
-          op.movimientos
-        ) ||
-        op.movimientos.length === 0
-      ) {
-
-        const sinMovimientos =
+        const tarjetaOperacion =
           document.createElement(
             'div'
           );
 
 
-        sinMovimientos.className =
-          'movimiento-card';
+        tarjetaOperacion.className =
+          'operacion-card';
 
 
-        sinMovimientos.textContent =
-          'Esta operación no tiene movimientos registrados.';
+        let claseEstado =
+          '';
 
 
-        tarjetaOperacion.appendChild(
-          sinMovimientos
-        );
+        if (
+          op.estado ===
+          'ACTIVO'
+        ) {
 
-      }
+          claseEstado =
+            'estado-activo';
+
+        }
 
 
-      /*************************************************
-       * MOVIMIENTOS
-       *************************************************/
+        if (
+          op.estado ===
+          'ANULADO'
+        ) {
 
-      op.movimientos.forEach(
-        function(mov) {
+          claseEstado =
+            'estado-anulado';
 
-          const tarjetaMovimiento =
+        }
+
+
+        if (
+          op.estado ===
+          'FINALIZADO'
+        ) {
+
+          claseEstado =
+            'estado-finalizado';
+
+        }
+
+
+        tarjetaOperacion.innerHTML =
+
+          '<div class="operacion-titulo">' +
+            escaparHtml(
+              op.idOperacion
+            ) +
+          '</div>' +
+
+          '<div class="dato">' +
+            'Estado: <span class="' +
+            claseEstado +
+            '">' +
+            escaparHtml(
+              op.estado
+            ) +
+            '</span>' +
+          '</div>' +
+
+          '<div class="dato">' +
+            'Fecha: <strong>' +
+            escaparHtml(
+              op.fecha
+            ) +
+            '</strong>' +
+          '</div>' +
+
+          '<div class="dato">' +
+            'Usuario: <strong>' +
+            escaparHtml(
+              op.usuario
+            ) +
+            '</strong>' +
+          '</div>';
+
+
+        if (
+          !Array.isArray(
+            op.movimientos
+          ) ||
+          op.movimientos.length === 0
+        ) {
+
+          const sinMovimientos =
             document.createElement(
               'div'
             );
 
 
-          const estadoMovimiento =
-            String(
-              mov.estado || ''
-            )
-              .toUpperCase();
+          sinMovimientos.className =
+            'movimiento-card';
 
 
-          tarjetaMovimiento.className =
-            'movimiento-card ' +
-            (
-              estadoMovimiento ===
-              'ANULADO'
-                ? 'anulado'
-                : 'activo'
+          sinMovimientos.textContent =
+            'Esta operación no tiene movimientos registrados.';
+
+
+          tarjetaOperacion
+            .appendChild(
+              sinMovimientos
             );
 
-
-          let detalleAnulacion =
-            '';
+        }
 
 
-          if (
-            estadoMovimiento ===
-            'ANULADO'
-          ) {
+        op.movimientos
+          .forEach(
+            function(mov) {
 
-            detalleAnulacion =
-
-              '<div class="dato">' +
-                'Fecha anulación: <strong>' +
-                escaparHtml(
-                  mov.fechaAnulacion || ''
-                ) +
-                '</strong>' +
-              '</div>' +
-
-              '<div class="dato">' +
-                'Anulado por: <strong>' +
-                escaparHtml(
-                  mov.usuarioAnulacion || ''
-                ) +
-                '</strong>' +
-              '</div>';
-
-          }
+              const tarjetaMovimiento =
+                document.createElement(
+                  'div'
+                );
 
 
-          tarjetaMovimiento.innerHTML =
+              const estadoMovimiento =
+                String(
+                  mov.estado || ''
+                )
+                  .toUpperCase();
 
-            '<div class="movimiento-titulo">' +
-              escaparHtml(
-                mov.producto
-              ) +
-            '</div>' +
 
-            '<div class="dato">' +
-              'Movimiento: <strong>' +
-              escaparHtml(
-                mov.idMovimiento
-              ) +
-              '</strong>' +
-            '</div>' +
+              tarjetaMovimiento.className =
+                'movimiento-card ' +
+                (
+                  estadoMovimiento ===
+                  'ANULADO'
+                    ? 'anulado'
+                    : 'activo'
+                );
 
-            '<div class="dato">' +
-              'Caja: <strong>' +
-              escaparHtml(
-                mov.codigoCaja
-              ) +
-              '</strong>' +
-            '</div>' +
 
-            '<div class="dato">' +
-              'Descontado: <strong>' +
-              mov.cantidadDescontada +
-              '</strong>' +
-            '</div>' +
+              let detalleAnulacion =
+                '';
 
-            '<div class="dato">' +
-              'Stock: <strong>' +
-              mov.cantidadAntes +
-              ' → ' +
-              mov.cantidadDespues +
-              '</strong>' +
-            '</div>' +
 
-            '<div class="dato">' +
-              'Usuario: <strong>' +
-              escaparHtml(
-                mov.usuario
-              ) +
-              '</strong>' +
-            '</div>' +
-
-            '<div class="dato">' +
-              'Fecha: <strong>' +
-              escaparHtml(
-                mov.fecha
-              ) +
-              '</strong>' +
-            '</div>' +
-
-            '<div class="dato">' +
-              'Estado: <span class="' +
-              (
+              if (
                 estadoMovimiento ===
                 'ANULADO'
-                  ? 'estado-anulado'
-                  : 'estado-activo'
-              ) +
-              '">' +
-              escaparHtml(
-                estadoMovimiento
-              ) +
-              '</span>' +
-            '</div>' +
+              ) {
 
-            detalleAnulacion;
+                detalleAnulacion =
+
+                  '<div class="dato">' +
+                    'Fecha anulación: <strong>' +
+                    escaparHtml(
+                      mov.fechaAnulacion || ''
+                    ) +
+                    '</strong>' +
+                  '</div>' +
+
+                  '<div class="dato">' +
+                    'Anulado por: <strong>' +
+                    escaparHtml(
+                      mov.usuarioAnulacion || ''
+                    ) +
+                    '</strong>' +
+                  '</div>';
+
+              }
 
 
-          tarjetaOperacion.appendChild(
-            tarjetaMovimiento
+              tarjetaMovimiento.innerHTML =
+
+                '<div class="movimiento-titulo">' +
+                  escaparHtml(
+                    mov.producto
+                  ) +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Movimiento: <strong>' +
+                  escaparHtml(
+                    mov.idMovimiento
+                  ) +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Caja: <strong>' +
+                  escaparHtml(
+                    mov.codigoCaja
+                  ) +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Descontado: <strong>' +
+                  mov.cantidadDescontada +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Stock: <strong>' +
+                  mov.cantidadAntes +
+                  ' → ' +
+                  mov.cantidadDespues +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Usuario: <strong>' +
+                  escaparHtml(
+                    mov.usuario
+                  ) +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Fecha: <strong>' +
+                  escaparHtml(
+                    mov.fecha
+                  ) +
+                  '</strong>' +
+                '</div>' +
+
+                '<div class="dato">' +
+                  'Estado: <span class="' +
+                  (
+                    estadoMovimiento ===
+                    'ANULADO'
+                      ? 'estado-anulado'
+                      : 'estado-activo'
+                  ) +
+                  '">' +
+                  escaparHtml(
+                    estadoMovimiento
+                  ) +
+                  '</span>' +
+                '</div>' +
+
+                detalleAnulacion;
+
+
+              tarjetaOperacion
+                .appendChild(
+                  tarjetaMovimiento
+                );
+
+            }
           );
 
-        }
-      );
 
+        contenedor
+          .appendChild(
+            tarjetaOperacion
+          );
 
-      contenedor.appendChild(
-        tarjetaOperacion
-      );
-
-    }
-  );
+      }
+    );
 
 
   contenedor.classList.remove(
@@ -1544,7 +1833,9 @@ async function iniciarPedido() {
   if (
     operacionEnCurso
   ) {
+
     return;
+
   }
 
 
@@ -1802,7 +2093,9 @@ function consultarCaja(
   if (
     consultaEnCurso
   ) {
+
     return;
+
   }
 
 
@@ -1834,6 +2127,7 @@ function consultarCaja(
 
 
   llamarApiJsonp(
+
     {
 
       accion:
@@ -2239,7 +2533,12 @@ async function ejecutarDescuento() {
       resultado.producto +
       ': se descontaron ' +
       resultado.cantidadDescontada +
-      ' packings. Stock ' +
+      (
+        resultado.cantidadDescontada === 1
+          ? ' packing. '
+          : ' packings. '
+      ) +
+      'Stock ' +
       resultado.cantidadAntes +
       ' → ' +
       resultado.cantidadDespues +
@@ -2286,7 +2585,9 @@ async function pedirFinalizarPedido() {
     operacionEnCurso ||
     !operacion
   ) {
+
     return;
+
   }
 
 
@@ -2299,7 +2600,9 @@ async function pedirFinalizarPedido() {
 
 
   if (!confirmar) {
+
     return;
+
   }
 
 
@@ -2441,10 +2744,13 @@ async function pedirFinalizarPedido() {
 
 
 /*******************************************************
- * ADMIN - MOVIMIENTO
+ * ADMIN - ANULAR MOVIMIENTO
  *******************************************************/
 
 async function pedirAnularMovimiento() {
+
+  ocultarMensaje();
+
 
   const pin =
     document
@@ -2501,7 +2807,9 @@ async function pedirAnularMovimiento() {
 
 
   if (!confirmar) {
+
     return;
+
   }
 
 
@@ -2606,10 +2914,13 @@ async function pedirAnularMovimiento() {
 
 
 /*******************************************************
- * ADMIN - PEDIDO COMPLETO
+ * ADMIN - ANULAR PEDIDO COMPLETO
  *******************************************************/
 
 async function pedirAnularPedidoCompleto() {
+
+  ocultarMensaje();
+
 
   const pin =
     document
@@ -2665,7 +2976,9 @@ async function pedirAnularPedidoCompleto() {
 
 
   if (!confirmar1) {
+
     return;
+
   }
 
 
@@ -2678,7 +2991,9 @@ async function pedirAnularPedidoCompleto() {
 
 
   if (!confirmar2) {
+
     return;
+
   }
 
 
@@ -2908,7 +3223,9 @@ async function abrirScanner() {
   if (
     scannerActivo
   ) {
+
     return;
+
   }
 
 
@@ -2928,6 +3245,7 @@ async function abrirScanner() {
       },
 
       {
+
         fps:
           10,
 
@@ -2972,7 +3290,9 @@ async function abrirScanner() {
         if (
           !scannerActivo
         ) {
+
           return;
+
         }
 
 
@@ -3072,30 +3392,47 @@ async function cerrarScanner() {
     null;
 
 
-  document
-    .getElementById(
+  const reader =
+    document.getElementById(
       'reader'
-    )
-    .innerHTML =
+    );
+
+
+  if (reader) {
+
+    reader.innerHTML =
       '';
 
+  }
 
-  document
-    .getElementById(
+
+  const btnScanner =
+    document.getElementById(
       'btnScanner'
-    )
-    .disabled =
+    );
+
+
+  if (btnScanner) {
+
+    btnScanner.disabled =
       false;
 
+  }
 
-  document
-    .getElementById(
+
+  const btnCerrar =
+    document.getElementById(
       'btnCerrarScanner'
-    )
-    .classList
-    .add(
+    );
+
+
+  if (btnCerrar) {
+
+    btnCerrar.classList.add(
       'oculto'
     );
+
+  }
 
 }
 
@@ -3142,7 +3479,9 @@ function llamarApiJsonp(
       if (
         terminado
       ) {
+
         return;
+
       }
 
 
@@ -3174,7 +3513,9 @@ function llamarApiJsonp(
       if (
         terminado
       ) {
+
         return;
+
       }
 
 
@@ -3250,7 +3591,9 @@ function llamarApiJsonp(
         if (
           terminado
         ) {
+
           return;
+
         }
 
 
@@ -3359,10 +3702,8 @@ function mostrarOk(
 
 
   window.scrollTo({
-    top:
-      0,
-    behavior:
-      'smooth'
+    top: 0,
+    behavior: 'smooth'
   });
 
 }
@@ -3388,10 +3729,8 @@ function mostrarError(
 
 
   window.scrollTo({
-    top:
-      0,
-    behavior:
-      'smooth'
+    top: 0,
+    behavior: 'smooth'
   });
 
 }
