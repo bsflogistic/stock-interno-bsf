@@ -340,6 +340,40 @@ button:disabled {
   margin-top: 6px;
 }
 
+
+
+/* =====================================================
+   HISTORIAL DE DESCUENTOS - PEDIDO ACTIVO
+   ===================================================== */
+
+.boton-historial {
+  background: #ffffff;
+  color: #188038;
+  border: 1px solid #8bc99c;
+  margin-top: 18px;
+}
+
+.boton-historial:hover { background: #f1f8f3; }
+.historial-descuentos { margin-top: 14px; border-top: 1px solid #dfe5e1; padding-top: 8px; }
+.historial-cargando { text-align: center; padding: 16px 4px; font-weight: bold; color: #5f6368; }
+.historial-vacio { padding: 16px 4px; text-align: center; color: #5f6368; }
+.historial-resumen { background: rgba(255,255,255,.72); border: 1px solid #cfe6d5; padding: 10px 12px; border-radius: 9px; margin: 10px 0 4px; font-size: 14px; color: #3c4043; }
+.historial-fila { padding: 13px 4px; border-bottom: 1px solid #dfe5e1; }
+.historial-fila:last-child { border-bottom: none; }
+.historial-producto { font-size: 16px; font-weight: 700; color: #202124; margin-bottom: 7px; }
+.historial-detalle { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.historial-mov { font-size: 13px; color: #5f6368; font-weight: 600; }
+.historial-ok { color: #188038; font-size: 13px; font-weight: 700; }
+.historial-anulado { color: #d93025; font-size: 13px; font-weight: 700; }
+.btn-anular-lista { width: auto; padding: 7px 13px; margin: 0 0 0 auto; background: #fce8e6; border: 1px solid #f1a8a2; color: #b3261e; font-size: 12px; border-radius: 7px; }
+.btn-anular-lista:hover { background: #f8d7d4; }
+.modal-anular-producto { font-size: 21px; font-weight: bold; margin: 12px 0 4px; }
+.modal-anular-cantidad { font-size: 18px; color: #188038; font-weight: bold; margin-bottom: 10px; }
+@media (max-width: 500px) {
+  .historial-detalle { align-items: flex-start; }
+  .btn-anular-lista { margin-left: 0; width: 100%; margin-top: 7px; }
+}
+
 </style>
 
 </head>
@@ -542,6 +576,27 @@ button:disabled {
         <div class="dato">
           Operación:
           <strong id="operacionActiva"></strong>
+        </div>
+
+        <button
+          id="btnHistorialDescuentos"
+          class="boton-historial"
+          onclick="alternarHistorialDescuentos()">
+          ↶ VER HISTORIAL DE DESCUENTOS
+        </button>
+
+        <div
+          id="contenedorHistorialDescuentos"
+          class="historial-descuentos oculto">
+
+          <div
+            id="cargandoHistorial"
+            class="historial-cargando oculto">
+            Cargando historial...
+          </div>
+
+          <div id="listaHistorialDescuentos"></div>
+
         </div>
 
       </div>
@@ -955,6 +1010,26 @@ button:disabled {
 </div>
 
 
+
+
+<!-- =================================================
+     MODAL ANULAR DESCUENTO DESDE HISTORIAL
+     ================================================= -->
+
+<div id="modalAnularHistorial" class="modal-fondo oculto">
+  <div class="modal">
+    <h2>Anular descuento</h2>
+    <div id="modalAnularProducto" class="modal-anular-producto"></div>
+    <div id="modalAnularCantidad" class="modal-anular-cantidad"></div>
+    <p>Esta acción devolverá la cantidad descontada al stock.</p>
+    <div class="dato">Movimiento: <strong id="modalAnularMovimiento"></strong></div>
+    <label>PIN administrador</label>
+    <input id="pinAnularHistorial" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN administrador">
+    <button class="gris" onclick="cerrarModalAnularHistorial()">CANCELAR</button>
+    <button id="btnConfirmarAnularHistorial" class="rojo" onclick="confirmarAnulacionDesdeHistorial()">ANULAR DESCUENTO</button>
+  </div>
+</div>
+
 <script>
 
 /*******************************************************
@@ -982,6 +1057,10 @@ let scannerActivo = false;
 let consultaEnCurso = false;
 
 let operacionEnCurso = false;
+
+let historialAbierto = false;
+
+let movimientoHistorialPendiente = null;
 
 
 /*******************************************************
@@ -2549,6 +2628,15 @@ async function ejecutarDescuento() {
     limpiarCaja();
 
 
+    if (
+      historialAbierto
+    ) {
+
+      cargarHistorialDescuentos();
+
+    }
+
+
   } catch (error) {
 
     mostrarError(
@@ -2710,6 +2798,9 @@ async function pedirFinalizarPedido() {
       )
       .value =
         '';
+
+
+    reiniciarHistorialDescuentos();
 
 
     mostrarOk(
@@ -3121,6 +3212,190 @@ async function pedirAnularPedidoCompleto() {
 
 }
 
+
+
+
+/*******************************************************
+ * HISTORIAL DE DESCUENTOS - PEDIDO ACTIVO
+ *******************************************************/
+
+function alternarHistorialDescuentos() {
+  const contenedor = document.getElementById('contenedorHistorialDescuentos');
+  const boton = document.getElementById('btnHistorialDescuentos');
+  if (historialAbierto) {
+    historialAbierto = false;
+    contenedor.classList.add('oculto');
+    boton.textContent = '↶ VER HISTORIAL DE DESCUENTOS';
+    return;
+  }
+  historialAbierto = true;
+  contenedor.classList.remove('oculto');
+  boton.textContent = '↑ OCULTAR HISTORIAL';
+  cargarHistorialDescuentos();
+}
+
+function cargarHistorialDescuentos() {
+  if (!operacion || !operacion.pedido || !operacion.idOperacion) {
+    mostrarError('No hay un pedido activo.');
+    return;
+  }
+  const cargando = document.getElementById('cargandoHistorial');
+  const lista = document.getElementById('listaHistorialDescuentos');
+  cargando.classList.remove('oculto');
+  lista.innerHTML = '';
+  llamarApiJsonp(
+    { accion: 'consultarPedido', pedido: operacion.pedido },
+    function(datos) {
+      cargando.classList.add('oculto');
+      if (!datos || !datos.ok || !datos.pedido) {
+        lista.innerHTML = '<div class="historial-vacio">No se pudo cargar el historial.</div>';
+        return;
+      }
+      mostrarHistorialOperacion(datos.pedido);
+    },
+    function(error) {
+      cargando.classList.add('oculto');
+      lista.innerHTML = '<div class="historial-vacio">' + escaparHtml(error) + '</div>';
+    }
+  );
+}
+
+function mostrarHistorialOperacion(pedidoConsultado) {
+  const lista = document.getElementById('listaHistorialDescuentos');
+  lista.innerHTML = '';
+  if (!pedidoConsultado || !Array.isArray(pedidoConsultado.operaciones)) {
+    lista.innerHTML = '<div class="historial-vacio">No hay movimientos registrados.</div>';
+    return;
+  }
+  const opActual = pedidoConsultado.operaciones.find(function(op) {
+    return String(op.idOperacion) === String(operacion.idOperacion);
+  });
+  if (!opActual || !Array.isArray(opActual.movimientos) || opActual.movimientos.length === 0) {
+    lista.innerHTML = '<div class="historial-vacio">Todavía no se realizaron descuentos en este pedido.</div>';
+    return;
+  }
+  let cantidadActiva = 0;
+  let movimientosActivos = 0;
+  let movimientosAnulados = 0;
+  opActual.movimientos.forEach(function(mov) {
+    const estado = String(mov.estado || '').trim().toUpperCase();
+    if (estado === 'ACTIVO') {
+      movimientosActivos++;
+      cantidadActiva += Number(mov.cantidadDescontada) || 0;
+    }
+    if (estado === 'ANULADO') movimientosAnulados++;
+  });
+  const resumen = document.createElement('div');
+  resumen.className = 'historial-resumen';
+  resumen.innerHTML = '<strong>' + movimientosActivos + '</strong> descuentos activos · <strong>' + cantidadActiva + '</strong> packings descontados · <strong>' + movimientosAnulados + '</strong> anulados';
+  lista.appendChild(resumen);
+
+  opActual.movimientos.forEach(function(mov) {
+    const estado = String(mov.estado || '').trim().toUpperCase();
+    const cantidad = Number(mov.cantidadDescontada) || 0;
+    const fila = document.createElement('div');
+    fila.className = 'historial-fila';
+
+    const producto = document.createElement('div');
+    producto.className = 'historial-producto';
+    producto.textContent = String(mov.producto || '') + ' - ' + cantidad + (cantidad === 1 ? ' packing' : ' packings');
+
+    const detalle = document.createElement('div');
+    detalle.className = 'historial-detalle';
+
+    const movimiento = document.createElement('span');
+    movimiento.className = 'historial-mov';
+    movimiento.textContent = String(mov.idMovimiento || '');
+
+    const estadoTexto = document.createElement('span');
+    if (estado === 'ANULADO') {
+      estadoTexto.className = 'historial-anulado';
+      estadoTexto.textContent = '✕ ANULADO';
+    } else {
+      estadoTexto.className = 'historial-ok';
+      estadoTexto.textContent = '✓ DESCONTADO EXITOSAMENTE';
+    }
+
+    detalle.appendChild(movimiento);
+    detalle.appendChild(estadoTexto);
+
+    if (estado !== 'ANULADO') {
+      const boton = document.createElement('button');
+      boton.className = 'btn-anular-lista';
+      boton.textContent = 'ANULAR';
+      boton.onclick = function() {
+        abrirModalAnularHistorial({
+          idMovimiento: mov.idMovimiento,
+          producto: mov.producto,
+          cantidad: cantidad
+        });
+      };
+      detalle.appendChild(boton);
+    }
+
+    fila.appendChild(producto);
+    fila.appendChild(detalle);
+    lista.appendChild(fila);
+  });
+}
+
+function abrirModalAnularHistorial(movimiento) {
+  movimientoHistorialPendiente = movimiento;
+  document.getElementById('modalAnularProducto').textContent = movimiento.producto;
+  document.getElementById('modalAnularCantidad').textContent = movimiento.cantidad + (movimiento.cantidad === 1 ? ' packing' : ' packings');
+  document.getElementById('modalAnularMovimiento').textContent = movimiento.idMovimiento;
+  document.getElementById('pinAnularHistorial').value = '';
+  document.getElementById('modalAnularHistorial').classList.remove('oculto');
+}
+
+function cerrarModalAnularHistorial() {
+  movimientoHistorialPendiente = null;
+  document.getElementById('modalAnularHistorial').classList.add('oculto');
+}
+
+async function confirmarAnulacionDesdeHistorial() {
+  if (!movimientoHistorialPendiente || !operacion) return;
+  const pin = document.getElementById('pinAnularHistorial').value.trim();
+  if (!pin) {
+    mostrarError('Ingresá el PIN administrador.');
+    return;
+  }
+  const boton = document.getElementById('btnConfirmarAnularHistorial');
+  boton.disabled = true;
+  boton.textContent = 'ANULANDO...';
+  try {
+    const resultado = await llamarWorker({
+      accion: 'anularMovimiento',
+      pin: pin,
+      idMovimiento: movimientoHistorialPendiente.idMovimiento,
+      usuarioAnulacion: operacion.usuario
+    });
+    if (!resultado || !resultado.ok) {
+      throw new Error(resultado && resultado.error ? resultado.error : 'No se pudo anular el descuento.');
+    }
+    const producto = movimientoHistorialPendiente.producto;
+    const cantidad = movimientoHistorialPendiente.cantidad;
+    cerrarModalAnularHistorial();
+    mostrarOk('✅ Se anuló ' + producto + ' - ' + cantidad + (cantidad === 1 ? ' packing.' : ' packings.') + ' El stock fue devuelto correctamente.');
+    cargarHistorialDescuentos();
+  } catch (error) {
+    mostrarError(obtenerMensajeError(error));
+  } finally {
+    boton.disabled = false;
+    boton.textContent = 'ANULAR DESCUENTO';
+  }
+}
+
+function reiniciarHistorialDescuentos() {
+  historialAbierto = false;
+  movimientoHistorialPendiente = null;
+  const contenedor = document.getElementById('contenedorHistorialDescuentos');
+  const boton = document.getElementById('btnHistorialDescuentos');
+  const lista = document.getElementById('listaHistorialDescuentos');
+  if (contenedor) contenedor.classList.add('oculto');
+  if (boton) boton.textContent = '↶ VER HISTORIAL DE DESCUENTOS';
+  if (lista) lista.innerHTML = '';
+}
 
 /*******************************************************
  * RESULTADO ADMIN
