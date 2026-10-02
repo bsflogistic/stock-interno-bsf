@@ -374,6 +374,80 @@ button:disabled {
   .btn-anular-lista { margin-left: 0; width: 100%; margin-top: 7px; }
 }
 
+
+
+/* =====================================================
+   AJUSTES FORZADOS DE STOCK
+   ===================================================== */
+
+.ajustes-forzados {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+}
+
+.ajustes-forzados h3 {
+  margin-top: 0;
+}
+
+.ajuste-botones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ajuste-botones button {
+  margin-top: 0;
+}
+
+.ajuste-panel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #dadce0;
+}
+
+.ajuste-caja-info {
+  background: white;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  padding: 13px;
+  margin-top: 12px;
+}
+
+.ajuste-producto {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.ajuste-stock {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.ajuste-previa {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #eef3f8;
+  font-weight: bold;
+}
+
+#readerAjuste {
+  width: 100%;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+@media (max-width: 500px) {
+  .ajuste-botones {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 
 </head>
@@ -879,6 +953,145 @@ button:disabled {
       </select>
 
 
+      <div class="ajustes-forzados">
+
+        <h3>
+          📦 Ajustes manuales de stock
+        </h3>
+
+        <p>
+          Escaneá una caja para sumar o bajar stock manualmente.
+        </p>
+
+        <div class="ajuste-botones">
+
+          <button
+            class="verde"
+            onclick="abrirAjusteForzado('AGREGAR')">
+            🟢 AGREGADO FORZADO
+          </button>
+
+          <button
+            class="rojo"
+            onclick="abrirAjusteForzado('BAJAR')">
+            🔴 BAJAR STOCK FORZADO
+          </button>
+
+        </div>
+
+
+        <div
+          id="panelAjusteForzado"
+          class="ajuste-panel oculto">
+
+          <h3 id="tituloAjusteForzado"></h3>
+
+
+          <button
+            id="btnScannerAjuste"
+            class="azul"
+            onclick="abrirScannerAjuste()">
+            📷 ESCANEAR QR DE CAJA
+          </button>
+
+
+          <div id="readerAjuste"></div>
+
+
+          <button
+            id="btnCerrarScannerAjuste"
+            class="gris oculto"
+            onclick="cerrarScannerAjuste()">
+            CERRAR CÁMARA
+          </button>
+
+
+          <label>
+            O ingresar código de caja
+          </label>
+
+          <input
+            id="codigoAjusteManual"
+            type="text"
+            placeholder="Ej: CJ-000001"
+          >
+
+          <button
+            class="gris"
+            onclick="buscarCajaAjusteManual()">
+            BUSCAR CAJA
+          </button>
+
+
+          <div
+            id="cajaAjusteInfo"
+            class="ajuste-caja-info oculto">
+
+            <div
+              id="productoAjuste"
+              class="ajuste-producto">
+            </div>
+
+            <div class="dato">
+              Caja:
+              <strong id="codigoCajaAjuste"></strong>
+            </div>
+
+            <div class="dato">
+              Stock actual:
+            </div>
+
+            <div
+              id="stockActualAjuste"
+              class="ajuste-stock">
+            </div>
+
+
+            <label>
+              Cantidad
+            </label>
+
+            <input
+              id="cantidadAjuste"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              placeholder="Ej: 50"
+              oninput="actualizarPreviaAjuste()"
+            >
+
+
+            <label>
+              Motivo
+            </label>
+
+            <input
+              id="motivoAjuste"
+              type="text"
+              placeholder="Ej: Corrección de inventario"
+            >
+
+
+            <div
+              id="previaAjuste"
+              class="ajuste-previa oculto">
+            </div>
+
+
+            <button
+              id="btnConfirmarAjuste"
+              onclick="confirmarAjusteForzado()">
+              CONFIRMAR AJUSTE
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
       <hr class="separador">
 
 
@@ -1062,6 +1275,11 @@ let historialAbierto = false;
 
 let movimientoHistorialPendiente = null;
 
+let tipoAjusteForzado = null;
+let cajaAjusteActual = null;
+let lectorAjuste = null;
+let scannerAjusteActivo = false;
+
 
 /*******************************************************
  * NAVEGACION
@@ -1195,6 +1413,8 @@ async function volverMenu() {
    * Cerramos cámara si estaba activa.
    */
   await cerrarScanner();
+
+  await cerrarScannerAjuste();
 
 
   ocultarSecciones();
@@ -3396,6 +3616,849 @@ function reiniciarHistorialDescuentos() {
   if (boton) boton.textContent = '↶ VER HISTORIAL DE DESCUENTOS';
   if (lista) lista.innerHTML = '';
 }
+
+
+/*******************************************************
+ * AJUSTES FORZADOS DE STOCK
+ *******************************************************/
+
+function abrirAjusteForzado(tipo) {
+
+  ocultarMensaje();
+
+  tipoAjusteForzado =
+    tipo;
+
+  cajaAjusteActual =
+    null;
+
+
+  const panel =
+    document.getElementById(
+      'panelAjusteForzado'
+    );
+
+
+  panel.classList.remove(
+    'oculto'
+  );
+
+
+  document
+    .getElementById(
+      'cajaAjusteInfo'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  document
+    .getElementById(
+      'codigoAjusteManual'
+    )
+    .value =
+      '';
+
+
+  document
+    .getElementById(
+      'cantidadAjuste'
+    )
+    .value =
+      '';
+
+
+  document
+    .getElementById(
+      'motivoAjuste'
+    )
+    .value =
+      '';
+
+
+  document
+    .getElementById(
+      'previaAjuste'
+    )
+    .classList
+    .add(
+      'oculto'
+    );
+
+
+  const titulo =
+    document.getElementById(
+      'tituloAjusteForzado'
+    );
+
+
+  const boton =
+    document.getElementById(
+      'btnConfirmarAjuste'
+    );
+
+
+  if (
+    tipo ===
+    'AGREGAR'
+  ) {
+
+    titulo.textContent =
+      '🟢 Agregado forzado';
+
+    boton.textContent =
+      'CONFIRMAR AGREGADO';
+
+    boton.className =
+      'verde';
+
+  } else {
+
+    titulo.textContent =
+      '🔴 Bajar stock forzado';
+
+    boton.textContent =
+      'CONFIRMAR BAJA DE STOCK';
+
+    boton.className =
+      'rojo';
+
+  }
+
+
+  panel.scrollIntoView({
+    behavior:
+      'smooth',
+    block:
+      'start'
+  });
+
+}
+
+
+function buscarCajaAjusteManual() {
+
+  const codigo =
+    document
+      .getElementById(
+        'codigoAjusteManual'
+      )
+      .value
+      .trim();
+
+
+  if (!codigo) {
+
+    mostrarError(
+      'Ingresá el código de la caja.'
+    );
+
+    return;
+
+  }
+
+
+  consultarCajaAjuste(
+    codigo
+  );
+
+}
+
+
+function consultarCajaAjuste(
+  codigo
+) {
+
+  llamarApiJsonp(
+
+    {
+      accion:
+        'consultarCaja',
+
+      codigo:
+        codigo
+    },
+
+    function(datos) {
+
+      if (
+        !datos ||
+        !datos.ok ||
+        !datos.caja
+      ) {
+
+        mostrarError(
+          datos &&
+          datos.error
+            ? datos.error
+            : 'No se encontró la caja.'
+        );
+
+        return;
+
+      }
+
+
+      cajaAjusteActual =
+        datos.caja;
+
+
+      document
+        .getElementById(
+          'productoAjuste'
+        )
+        .textContent =
+          cajaAjusteActual.producto;
+
+
+      document
+        .getElementById(
+          'codigoCajaAjuste'
+        )
+        .textContent =
+          cajaAjusteActual.codigoCaja;
+
+
+      document
+        .getElementById(
+          'stockActualAjuste'
+        )
+        .textContent =
+          cajaAjusteActual.cantidadActual;
+
+
+      document
+        .getElementById(
+          'cajaAjusteInfo'
+        )
+        .classList
+        .remove(
+          'oculto'
+        );
+
+
+      actualizarPreviaAjuste();
+
+    },
+
+    function(error) {
+
+      mostrarError(
+        error
+      );
+
+    }
+
+  );
+
+}
+
+
+function actualizarPreviaAjuste() {
+
+  if (
+    !cajaAjusteActual ||
+    !tipoAjusteForzado
+  ) {
+    return;
+  }
+
+
+  const cantidad =
+    Number(
+      document
+        .getElementById(
+          'cantidadAjuste'
+        )
+        .value
+    );
+
+
+  const previa =
+    document.getElementById(
+      'previaAjuste'
+    );
+
+
+  if (
+    !Number.isInteger(cantidad) ||
+    cantidad <= 0
+  ) {
+
+    previa.classList.add(
+      'oculto'
+    );
+
+    return;
+
+  }
+
+
+  const actual =
+    Number(
+      cajaAjusteActual.cantidadActual
+    );
+
+
+  const despues =
+    tipoAjusteForzado ===
+      'AGREGAR'
+      ? actual + cantidad
+      : actual - cantidad;
+
+
+  previa.classList.remove(
+    'oculto'
+  );
+
+
+  if (
+    despues < 0
+  ) {
+
+    previa.textContent =
+      '⚠️ No permitido: el stock quedaría en ' +
+      despues +
+      '.';
+
+    return;
+
+  }
+
+
+  previa.textContent =
+    'Stock: ' +
+    actual +
+    (
+      tipoAjusteForzado === 'AGREGAR'
+        ? ' + '
+        : ' - '
+    ) +
+    cantidad +
+    ' = ' +
+    despues;
+
+}
+
+
+async function confirmarAjusteForzado() {
+
+  if (
+    !cajaAjusteActual ||
+    !tipoAjusteForzado
+  ) {
+
+    mostrarError(
+      'Primero escaneá o buscá una caja.'
+    );
+
+    return;
+
+  }
+
+
+  const pin =
+    document
+      .getElementById(
+        'pinAdmin'
+      )
+      .value
+      .trim();
+
+
+  const usuario =
+    document
+      .getElementById(
+        'usuarioAnulacion'
+      )
+      .value
+      .trim();
+
+
+  const cantidad =
+    Number(
+      document
+        .getElementById(
+          'cantidadAjuste'
+        )
+        .value
+    );
+
+
+  const motivo =
+    document
+      .getElementById(
+        'motivoAjuste'
+      )
+      .value
+      .trim();
+
+
+  if (
+    !pin ||
+    !usuario
+  ) {
+
+    mostrarError(
+      'Completá PIN administrador y usuario.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !Number.isInteger(cantidad) ||
+    cantidad <= 0
+  ) {
+
+    mostrarError(
+      'Ingresá una cantidad válida.'
+    );
+
+    return;
+
+  }
+
+
+  if (!motivo) {
+
+    mostrarError(
+      'Ingresá el motivo del ajuste.'
+    );
+
+    return;
+
+  }
+
+
+  const stockActual =
+    Number(
+      cajaAjusteActual.cantidadActual
+    );
+
+
+  const stockDespues =
+    tipoAjusteForzado ===
+      'AGREGAR'
+      ? stockActual + cantidad
+      : stockActual - cantidad;
+
+
+  if (
+    stockDespues < 0
+  ) {
+
+    mostrarError(
+      'No se puede dejar el stock en negativo.'
+    );
+
+    return;
+
+  }
+
+
+  const textoAccion =
+    tipoAjusteForzado ===
+      'AGREGAR'
+      ? 'AGREGAR'
+      : 'BAJAR';
+
+
+  const confirmar =
+    window.confirm(
+      textoAccion +
+      ' ' +
+      cantidad +
+      ' packings en ' +
+      cajaAjusteActual.producto +
+      ' (' +
+      cajaAjusteActual.codigoCaja +
+      ')?\n\n' +
+      'Stock actual: ' +
+      stockActual +
+      '\n' +
+      'Stock resultante: ' +
+      stockDespues +
+      '\n\n' +
+      'Motivo: ' +
+      motivo
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  if (
+    tipoAjusteForzado ===
+    'BAJAR'
+  ) {
+
+    const confirmarBaja =
+      window.confirm(
+        'CONFIRMACIÓN FINAL\n\n' +
+        'Se bajará stock manualmente.\n' +
+        '¿Continuar?'
+      );
+
+
+    if (!confirmarBaja) {
+      return;
+    }
+
+  }
+
+
+  const boton =
+    document.getElementById(
+      'btnConfirmarAjuste'
+    );
+
+
+  boton.disabled =
+    true;
+
+  boton.textContent =
+    'PROCESANDO...';
+
+
+  try {
+
+    const resultado =
+      await llamarWorker({
+
+        accion:
+          'ajustarStockForzado',
+
+        pin:
+          pin,
+
+        codigoCaja:
+          cajaAjusteActual.codigoCaja,
+
+        cantidad:
+          cantidad,
+
+        tipo:
+          tipoAjusteForzado,
+
+        motivo:
+          motivo,
+
+        usuario:
+          usuario
+
+      });
+
+
+    if (
+      !resultado ||
+      !resultado.ok
+    ) {
+
+      throw new Error(
+        resultado &&
+        resultado.error
+          ? resultado.error
+          : 'No se pudo realizar el ajuste.'
+      );
+
+    }
+
+
+    cajaAjusteActual.cantidadActual =
+      resultado.stockDespues;
+
+
+    document
+      .getElementById(
+        'stockActualAjuste'
+      )
+      .textContent =
+        resultado.stockDespues;
+
+
+    document
+      .getElementById(
+        'cantidadAjuste'
+      )
+      .value =
+        '';
+
+
+    document
+      .getElementById(
+        'motivoAjuste'
+      )
+      .value =
+        '';
+
+
+    document
+      .getElementById(
+        'previaAjuste'
+      )
+      .classList
+      .add(
+        'oculto'
+      );
+
+
+    mostrarOk(
+      '✅ Ajuste ' +
+      resultado.idAjuste +
+      ' realizado. ' +
+      resultado.producto +
+      ': ' +
+      resultado.stockAntes +
+      ' → ' +
+      resultado.stockDespues +
+      '.'
+    );
+
+
+  } catch (error) {
+
+    mostrarError(
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  } finally {
+
+    boton.disabled =
+      false;
+
+
+    if (
+      tipoAjusteForzado ===
+      'AGREGAR'
+    ) {
+
+      boton.textContent =
+        'CONFIRMAR AGREGADO';
+
+    } else {
+
+      boton.textContent =
+        'CONFIRMAR BAJA DE STOCK';
+
+    }
+
+  }
+
+}
+
+
+/*******************************************************
+ * SCANNER PARA AJUSTES FORZADOS
+ *******************************************************/
+
+async function abrirScannerAjuste() {
+
+  ocultarMensaje();
+
+
+  if (
+    scannerAjusteActivo
+  ) {
+    return;
+  }
+
+
+  try {
+
+    lectorAjuste =
+      new Html5Qrcode(
+        'readerAjuste'
+      );
+
+
+    await lectorAjuste.start(
+
+      {
+        facingMode:
+          'environment'
+      },
+
+      {
+        fps:
+          10,
+
+        qrbox:
+          function(
+            width,
+            height
+          ) {
+
+            const minimo =
+              Math.min(
+                width,
+                height
+              );
+
+
+            const tamano =
+              Math.floor(
+                minimo * 0.70
+              );
+
+
+            return {
+              width:
+                tamano,
+              height:
+                tamano
+            };
+
+          }
+      },
+
+      function(decodedText) {
+
+        if (
+          !scannerAjusteActivo
+        ) {
+          return;
+        }
+
+
+        scannerAjusteActivo =
+          false;
+
+
+        cerrarScannerAjuste()
+          .then(
+            function() {
+
+              consultarCajaAjuste(
+                decodedText
+              );
+
+            }
+          );
+
+      },
+
+      function() {}
+
+    );
+
+
+    scannerAjusteActivo =
+      true;
+
+
+    document
+      .getElementById(
+        'btnScannerAjuste'
+      )
+      .disabled =
+        true;
+
+
+    document
+      .getElementById(
+        'btnCerrarScannerAjuste'
+      )
+      .classList
+      .remove(
+        'oculto'
+      );
+
+
+  } catch (error) {
+
+    scannerAjusteActivo =
+      false;
+
+
+    mostrarError(
+      'No se pudo abrir la cámara: ' +
+      obtenerMensajeError(
+        error
+      )
+    );
+
+  }
+
+}
+
+
+async function cerrarScannerAjuste() {
+
+  scannerAjusteActivo =
+    false;
+
+
+  if (
+    lectorAjuste
+  ) {
+
+    try {
+
+      if (
+        lectorAjuste.isScanning
+      ) {
+        await lectorAjuste.stop();
+      }
+
+    } catch (error) {}
+
+
+    try {
+      lectorAjuste.clear();
+    } catch (error) {}
+
+  }
+
+
+  lectorAjuste =
+    null;
+
+
+  const reader =
+    document.getElementById(
+      'readerAjuste'
+    );
+
+
+  if (reader) {
+    reader.innerHTML = '';
+  }
+
+
+  const boton =
+    document.getElementById(
+      'btnScannerAjuste'
+    );
+
+
+  if (boton) {
+    boton.disabled = false;
+  }
+
+
+  const cerrar =
+    document.getElementById(
+      'btnCerrarScannerAjuste'
+    );
+
+
+  if (cerrar) {
+    cerrar.classList.add(
+      'oculto'
+    );
+  }
+
+}
+
 
 /*******************************************************
  * RESULTADO ADMIN
