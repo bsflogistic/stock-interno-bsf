@@ -1,3223 +1,536 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>Stock Interno BSF</title>
-
-<script
-  src="https://unpkg.com/html5-qrcode"
-  type="text/javascript">
-</script>
-
-<style>
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f3f4f6;
-  color: #202124;
-}
-
-.contenedor {
-  max-width: 560px;
-  margin: auto;
-  padding: 16px;
-}
-
-.cabecera {
-  text-align: center;
-  margin-bottom: 18px;
-}
-
-.cabecera h1 {
-  margin-bottom: 4px;
-}
-
-.cabecera p {
-  margin-top: 0;
-  color: #666;
-}
-
-.tarjeta {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.10);
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin-top: 14px;
-  margin-bottom: 6px;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 13px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: white;
-}
-
-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 14px;
-  border: 0;
-  border-radius: 9px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: .55;
-  cursor: not-allowed;
-}
-
-.verde {
-  background: #188038;
-  color: white;
-}
-
-.azul {
-  background: #1a73e8;
-  color: white;
-}
-
-.rojo {
-  background: #d93025;
-  color: white;
-}
-
-.naranja {
-  background: #f29900;
-  color: white;
-}
-
-.gris {
-  background: #e8eaed;
-  color: #202124;
-}
-
-.oscuro {
-  background: #202124;
-  color: white;
-}
-
-.oculto {
-  display: none !important;
-}
-
-.menu-principal {
-  margin-top: 20px;
-}
-
-.menu-boton {
-  min-height: 80px;
-  font-size: 20px;
-  border-radius: 14px;
-  margin-top: 12px;
-}
-
-.menu-produccion {
-  background: #188038;
-  color: white;
-}
-
-.menu-consulta {
-  background: #1a73e8;
-  color: white;
-}
-
-.menu-admin {
-  background: #202124;
-  color: white;
-}
-
-.titulo-seccion {
-  text-align: center;
-  margin-top: 0;
-}
-
-.volver {
-  margin-bottom: 15px;
-  background: #e8eaed;
-  color: #202124;
-}
-
-.pedido-activo {
-  background: #e6f4ea;
-  border: 1px solid #34a853;
-}
-
-.admin {
-  border: 2px solid #202124;
-}
-
-.producto {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 14px;
-}
-
-.stock {
-  font-size: 36px;
-  font-weight: bold;
-  margin: 4px 0 14px;
-}
-
-.dato {
-  margin: 8px 0;
-  font-size: 17px;
-}
-
-.mensaje {
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  line-height: 1.4;
-}
-
-.mensaje-ok {
-  background: #e6f4ea;
-  color: #137333;
-}
-
-.mensaje-error {
-  background: #fce8e6;
-  color: #a50e0e;
-}
-
-#reader {
-  width: 100%;
-  margin-top: 15px;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-.modal-fondo {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 9999;
-}
-
-.modal {
-  background: white;
-  width: 100%;
-  max-width: 430px;
-  border-radius: 14px;
-  padding: 22px;
-}
-
-.modal h2 {
-  margin-top: 0;
-}
-
-.cantidad-grande {
-  font-size: 30px;
-  font-weight: bold;
-}
-
-.resultado-stock {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.estado-uso {
-  color: #137333;
-  font-weight: bold;
-}
-
-.estado-guardada {
-  color: #b06000;
-  font-weight: bold;
-}
-
-.estado-activo {
-  color: #137333;
-  font-weight: bold;
-}
-
-.estado-anulado {
-  color: #a50e0e;
-  font-weight: bold;
-}
-
-.estado-finalizado {
-  color: #1a73e8;
-  font-weight: bold;
-}
-
-.cargando {
-  text-align: center;
-  font-weight: bold;
-}
-
-.separador {
-  margin: 18px 0;
-  border: 0;
-  border-top: 1px solid #ddd;
-}
-
-.resultado-admin {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 10px;
-  background: #f8f9fa;
-  white-space: pre-line;
-}
-
-.resumen-pedido {
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 14px;
-  margin-top: 14px;
-}
-
-.resumen-numero {
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.operacion-card {
-  border: 1px solid #dadce0;
-  border-radius: 10px;
-  padding: 14px;
-  margin-top: 14px;
-}
-
-.operacion-titulo {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.movimiento-card {
-  background: #f8f9fa;
-  border-radius: 9px;
-  padding: 12px;
-  margin-top: 10px;
-}
-
-.movimiento-card.anulado {
-  background: #fce8e6;
-}
-
-.movimiento-card.activo {
-  background: #e6f4ea;
-}
-
-.movimiento-titulo {
-  font-weight: bold;
-  font-size: 17px;
-}
-
-.packings-resumen {
-  font-size: 28px;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-
-
-/* =====================================================
-   HISTORIAL DE DESCUENTOS - PEDIDO ACTIVO
-   ===================================================== */
-
-.boton-historial {
-  background: #ffffff;
-  color: #188038;
-  border: 1px solid #8bc99c;
-  margin-top: 18px;
-}
-
-.boton-historial:hover { background: #f1f8f3; }
-.historial-descuentos { margin-top: 14px; border-top: 1px solid #dfe5e1; padding-top: 8px; }
-.historial-cargando { text-align: center; padding: 16px 4px; font-weight: bold; color: #5f6368; }
-.historial-vacio { padding: 16px 4px; text-align: center; color: #5f6368; }
-.historial-resumen { background: rgba(255,255,255,.72); border: 1px solid #cfe6d5; padding: 10px 12px; border-radius: 9px; margin: 10px 0 4px; font-size: 14px; color: #3c4043; }
-.historial-fila { padding: 13px 4px; border-bottom: 1px solid #dfe5e1; }
-.historial-fila:last-child { border-bottom: none; }
-.historial-producto { font-size: 16px; font-weight: 700; color: #202124; margin-bottom: 7px; }
-.historial-detalle { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-.historial-mov { font-size: 13px; color: #5f6368; font-weight: 600; }
-.historial-ok { color: #188038; font-size: 13px; font-weight: 700; }
-.historial-anulado { color: #d93025; font-size: 13px; font-weight: 700; }
-.btn-anular-lista { width: auto; padding: 7px 13px; margin: 0 0 0 auto; background: #fce8e6; border: 1px solid #f1a8a2; color: #b3261e; font-size: 12px; border-radius: 7px; }
-.btn-anular-lista:hover { background: #f8d7d4; }
-.modal-anular-producto { font-size: 21px; font-weight: bold; margin: 12px 0 4px; }
-.modal-anular-cantidad { font-size: 18px; color: #188038; font-weight: bold; margin-bottom: 10px; }
-@media (max-width: 500px) {
-  .historial-detalle { align-items: flex-start; }
-  .btn-anular-lista { margin-left: 0; width: 100%; margin-top: 7px; }
-}
-
-
-
-/* =====================================================
-   AJUSTES FORZADOS DE STOCK
-   ===================================================== */
-
-.ajustes-forzados {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 12px;
-  background: #f8f9fa;
-  border: 1px solid #dadce0;
-}
-
-.ajustes-forzados h3 {
-  margin-top: 0;
-}
-
-.ajuste-botones {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.ajuste-botones button {
-  margin-top: 0;
-}
-
-.ajuste-panel {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid #dadce0;
-}
-
-.ajuste-caja-info {
-  background: white;
-  border: 1px solid #dadce0;
-  border-radius: 10px;
-  padding: 13px;
-  margin-top: 12px;
-}
-
-.ajuste-producto {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.ajuste-stock {
-  font-size: 30px;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-.ajuste-previa {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 9px;
-  background: #eef3f8;
-  font-weight: bold;
-}
-
-#readerAjuste {
-  width: 100%;
-  margin-top: 12px;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-@media (max-width: 500px) {
-  .ajuste-botones {
-    grid-template-columns: 1fr;
-  }
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="contenedor">
-
-
-  <!-- CABECERA -->
-
-  <div class="cabecera">
-
-    <h1>
-      📦 STOCK INTERNO
-    </h1>
-
-    <p>
-      Producción BSF
-    </p>
-
-  </div>
-
-
-  <div
-    id="mensaje"
-    class="oculto">
-  </div>
-
-
-  <!-- =================================================
-       MENU PRINCIPAL
-       ================================================= -->
-
-  <div
-    id="menuPrincipal"
-    class="menu-principal">
-
-    <div class="tarjeta">
-
-      <h2 class="titulo-seccion">
-        ¿Qué querés hacer?
-      </h2>
-
-      <button
-        class="menu-boton menu-produccion"
-        onclick="abrirProduccion()">
-        📦 PRODUCCIÓN
-      </button>
-
-      <button
-        class="menu-boton menu-consulta"
-        onclick="abrirVerPedido()">
-        🔎 VER PEDIDO
-      </button>
-
-      <button
-        class="menu-boton menu-admin"
-        onclick="abrirAdministrador()">
-        🔐 ADMINISTRADOR
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =================================================
-       PRODUCCION
-       ================================================= -->
-
-  <div
-    id="seccionProduccion"
-    class="oculto">
-
-    <button
-      class="volver"
-      onclick="volverMenu()">
-      ← VOLVER AL MENÚ
-    </button>
-
-
-    <!-- NUEVO PEDIDO -->
-
-    <div
-      id="pantallaInicio"
-      class="tarjeta">
-
-      <h2>
-        📦 Nuevo pedido
-      </h2>
-
-
-      <label>
-        PIN de producción
-      </label>
-
-      <input
-        id="pin"
-        type="password"
-        inputmode="numeric"
-        autocomplete="off"
-        placeholder="PIN"
-      >
-
-
-      <label>
-        Usuario
-      </label>
-
-      <select
-        id="usuario"
-        onchange="guardarUsuarioProduccion()">
-
-        <option value="">
-          Seleccionar usuario
-        </option>
-
-        <option value="Facundo">
-          Facundo
-        </option>
-
-        <option value="Candelaria">
-          Candelaria
-        </option>
-
-        <option value="Joni Finanzas">
-          Joni Finanzas
-        </option>
-
-        <option value="Jonas">
-          Jonas
-        </option>
-
-      </select>
-
-
-      <label>
-        Número de pedido
-      </label>
-
-      <input
-        id="pedido"
-        type="text"
-        placeholder="Ej: 6475"
-      >
-
-
-      <label>
-        Cliente
-      </label>
-
-      <input
-        id="cliente"
-        type="text"
-        placeholder="Ej: Jardín Espacial"
-      >
-
-
-      <button
-        id="btnIniciar"
-        class="verde"
-        onclick="iniciarPedido()">
-        INICIAR PEDIDO
-      </button>
-
-    </div>
-
-
-    <!-- PEDIDO ACTIVO -->
-
-    <div
-      id="pantallaPedido"
-      class="oculto">
-
-
-      <div
-        class="tarjeta pedido-activo">
-
-        <strong>
-          🟢 PEDIDO ACTIVO
-        </strong>
-
-        <div class="dato">
-          Pedido:
-          <strong id="pedidoActivo"></strong>
-        </div>
-
-        <div class="dato">
-          Cliente:
-          <strong id="clienteActivo"></strong>
-        </div>
-
-        <div class="dato">
-          Usuario:
-          <strong id="usuarioActivo"></strong>
-        </div>
-
-        <div class="dato">
-          Operación:
-          <strong id="operacionActiva"></strong>
-        </div>
-
-        <button
-          id="btnHistorialDescuentos"
-          class="boton-historial"
-          onclick="alternarHistorialDescuentos()">
-          ↶ VER HISTORIAL DE DESCUENTOS
-        </button>
-
-        <div
-          id="contenedorHistorialDescuentos"
-          class="historial-descuentos oculto">
-
-          <div
-            id="cargandoHistorial"
-            class="historial-cargando oculto">
-            Cargando historial...
-          </div>
-
-          <div id="listaHistorialDescuentos"></div>
-
-        </div>
-
-      </div>
-
-
-      <!-- ESCANEAR -->
-
-      <div
-        id="tarjetaEscaneo"
-        class="tarjeta">
-
-        <h2>
-          Escanear caja
-        </h2>
-
-        <button
-          id="btnScanner"
-          class="azul"
-          onclick="abrirScanner()">
-          📷 ESCANEAR QR
-        </button>
-
-
-        <div id="reader"></div>
-
-
-        <button
-          id="btnCerrarScanner"
-          class="rojo oculto"
-          onclick="cerrarScanner()">
-          CERRAR CÁMARA
-        </button>
-
-
-        <label>
-          O ingresar código
-        </label>
-
-        <input
-          id="codigoManual"
-          type="text"
-          placeholder="Ej: CJ-000001"
-        >
-
-        <button
-          class="gris"
-          onclick="buscarCajaManual()">
-          BUSCAR CAJA
-        </button>
-
-      </div>
-
-
-      <div
-        id="cargandoCaja"
-        class="tarjeta cargando oculto">
-
-        Consultando caja...
-
-      </div>
-
-
-      <!-- CAJA ENCONTRADA -->
-
-      <div
-        id="tarjetaCaja"
-        class="tarjeta oculto">
-
-
-        <div
-          id="productoCaja"
-          class="producto">
-        </div>
-
-
-        <div class="dato">
-          Caja:
-          <strong id="codigoCaja"></strong>
-        </div>
-
-
-        <div class="dato">
-          Estado:
-          <span id="estadoCaja"></span>
-        </div>
-
-
-        <div class="dato">
-          Stock actual:
-        </div>
-
-
-        <div
-          id="stockCaja"
-          class="stock">
-        </div>
-
-
-        <label>
-          Packings a descontar
-        </label>
-
-        <input
-          id="cantidadDescontar"
-          type="number"
-          inputmode="numeric"
-          min="1"
-          step="1"
-          placeholder="Ej: 4"
-        >
-
-
-        <button
-          id="btnPreparar"
-          class="verde"
-          onclick="prepararDescuento()">
-          CONFIRMAR DESCUENTO
-        </button>
-
-
-        <button
-          class="gris"
-          onclick="cambiarCaja()">
-          CAMBIAR CAJA
-        </button>
-
-      </div>
-
-
-      <!-- FINALIZAR -->
-
-      <div class="tarjeta">
-
-        <button
-          id="btnFinalizar"
-          class="rojo"
-          onclick="pedirFinalizarPedido()">
-          FINALIZAR PEDIDO
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =================================================
-       VER PEDIDO
-       ================================================= -->
-
-  <div
-    id="seccionVerPedido"
-    class="oculto">
-
-    <button
-      class="volver"
-      onclick="volverMenu()">
-      ← VOLVER AL MENÚ
-    </button>
-
-
-    <div class="tarjeta">
-
-      <h2>
-        🔎 Ver pedido
-      </h2>
-
-      <p>
-        Consultá qué productos fueron descontados.
-      </p>
-
-
-      <label>
-        Número de pedido
-      </label>
-
-      <input
-        id="pedidoConsultar"
-        type="text"
-        placeholder="Ej: 6475"
-      >
-
-
-      <button
-        id="btnConsultarPedido"
-        class="azul"
-        onclick="buscarPedido()">
-        BUSCAR PEDIDO
-      </button>
-
-
-      <div
-        id="cargandoPedido"
-        class="cargando oculto">
-
-        Buscando pedido...
-
-      </div>
-
-
-      <div
-        id="resultadoPedido"
-        class="oculto">
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =================================================
-       ADMINISTRADOR
-       ================================================= -->
-
-  <div
-    id="seccionAdministrador"
-    class="oculto">
-
-    <button
-      class="volver"
-      onclick="volverMenu()">
-      ← VOLVER AL MENÚ
-    </button>
-
-
-    <div
-      class="tarjeta admin">
-
-      <h2>
-        🔐 Administrador
-      </h2>
-
-      <p>
-        Herramientas de anulación.
-      </p>
-
-
-      <label>
-        PIN administrador
-      </label>
-
-      <input
-        id="pinAdmin"
-        type="password"
-        inputmode="numeric"
-        autocomplete="off"
-        placeholder="PIN administrador"
-      >
-
-
-      <label>
-        Usuario que anula
-      </label>
-
-      <select
-        id="usuarioAnulacion"
-        onchange="guardarUsuarioAdmin()">
-
-        <option value="">
-          Seleccionar usuario
-        </option>
-
-        <option value="Facundo">
-          Facundo
-        </option>
-
-        <option value="Candelaria">
-          Candelaria
-        </option>
-
-        <option value="Joni Finanzas">
-          Joni Finanzas
-        </option>
-
-        <option value="Jonas">
-          Jonas
-        </option>
-
-      </select>
-
-
-      <div class="ajustes-forzados">
-
-        <h3>
-          📦 Ajustes manuales de stock
-        </h3>
-
-        <p>
-          Escaneá una caja para sumar o bajar stock manualmente.
-        </p>
-
-        <div class="ajuste-botones">
-
-          <button
-            class="verde"
-            onclick="abrirAjusteForzado('AGREGAR')">
-            🟢 AGREGADO FORZADO
-          </button>
-
-          <button
-            class="rojo"
-            onclick="abrirAjusteForzado('BAJAR')">
-            🔴 BAJAR STOCK FORZADO
-          </button>
-
-        </div>
-
-
-        <div
-          id="panelAjusteForzado"
-          class="ajuste-panel oculto">
-
-          <h3 id="tituloAjusteForzado"></h3>
-
-
-          <button
-            id="btnScannerAjuste"
-            class="azul"
-            onclick="abrirScannerAjuste()">
-            📷 ESCANEAR QR DE CAJA
-          </button>
-
-
-          <div id="readerAjuste"></div>
-
-
-          <button
-            id="btnCerrarScannerAjuste"
-            class="gris oculto"
-            onclick="cerrarScannerAjuste()">
-            CERRAR CÁMARA
-          </button>
-
-
-          <label>
-            O ingresar código de caja
-          </label>
-
-          <input
-            id="codigoAjusteManual"
-            type="text"
-            placeholder="Ej: CJ-000001"
-          >
-
-          <button
-            class="gris"
-            onclick="buscarCajaAjusteManual()">
-            BUSCAR CAJA
-          </button>
-
-
-          <div
-            id="cajaAjusteInfo"
-            class="ajuste-caja-info oculto">
-
-            <div
-              id="productoAjuste"
-              class="ajuste-producto">
-            </div>
-
-            <div class="dato">
-              Caja:
-              <strong id="codigoCajaAjuste"></strong>
-            </div>
-
-            <div class="dato">
-              Stock actual:
-            </div>
-
-            <div
-              id="stockActualAjuste"
-              class="ajuste-stock">
-            </div>
-
-
-            <label>
-              Cantidad
-            </label>
-
-            <input
-              id="cantidadAjuste"
-              type="number"
-              min="1"
-              step="1"
-              inputmode="numeric"
-              placeholder="Ej: 50"
-              oninput="actualizarPreviaAjuste()"
-            >
-
-
-            <label>
-              Motivo
-            </label>
-
-            <input
-              id="motivoAjuste"
-              type="text"
-              placeholder="Ej: Corrección de inventario"
-            >
-
-
-            <div
-              id="previaAjuste"
-              class="ajuste-previa oculto">
-            </div>
-
-
-            <button
-              id="btnConfirmarAjuste"
-              onclick="confirmarAjusteForzado()">
-              CONFIRMAR AJUSTE
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <hr class="separador">
-
-
-      <h3>
-        Anular movimiento
-      </h3>
-
-      <label>
-        ID movimiento
-      </label>
-
-      <input
-        id="idMovimientoAnular"
-        type="text"
-        placeholder="Ej: MOV-000001"
-      >
-
-      <button
-        id="btnAnularMovimiento"
-        class="naranja"
-        onclick="pedirAnularMovimiento()">
-        ANULAR MOVIMIENTO
-      </button>
-
-
-      <hr class="separador">
-
-
-      <h3>
-        Anular pedido completo
-      </h3>
-
-      <label>
-        Número de pedido
-      </label>
-
-      <input
-        id="pedidoAnular"
-        type="text"
-        placeholder="Ej: 6475"
-      >
-
-      <button
-        id="btnAnularPedido"
-        class="rojo"
-        onclick="pedirAnularPedidoCompleto()">
-        ANULAR PEDIDO COMPLETO
-      </button>
-
-
-      <div
-        id="resultadoAdmin"
-        class="resultado-admin oculto">
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =================================================
-     MODAL DESCUENTO
-     ================================================= -->
-
-<div
-  id="modalDescuento"
-  class="modal-fondo oculto">
-
-  <div class="modal">
-
-    <h2>
-      ¿Estás seguro?
-    </h2>
-
-    <p>
-      Se van a descontar:
-    </p>
-
-    <div
-      id="modalCantidad"
-      class="cantidad-grande">
-    </div>
-
-    <p>
-      de
-      <strong id="modalProducto"></strong>
-    </p>
-
-
-    <div class="dato">
-      Caja:
-      <strong id="modalCaja"></strong>
-    </div>
-
-
-    <div class="dato">
-      Stock actual:
-      <strong id="modalAntes"></strong>
-    </div>
-
-
-    <div class="dato">
-      Stock resultante:
-      <strong
-        id="modalDespues"
-        class="resultado-stock">
-      </strong>
-    </div>
-
-
-    <button
-      class="gris"
-      onclick="cerrarModalDescuento()">
-      CANCELAR
-    </button>
-
-
-    <button
-      id="btnDescontar"
-      class="verde"
-      onclick="ejecutarDescuento()">
-      SÍ, DESCONTAR
-    </button>
-
-  </div>
-
-</div>
-
-
-
-
-<!-- =================================================
-     MODAL ANULAR DESCUENTO DESDE HISTORIAL
-     ================================================= -->
-
-<div id="modalAnularHistorial" class="modal-fondo oculto">
-  <div class="modal">
-    <h2>Anular descuento</h2>
-    <div id="modalAnularProducto" class="modal-anular-producto"></div>
-    <div id="modalAnularCantidad" class="modal-anular-cantidad"></div>
-    <p>Esta acción devolverá la cantidad descontada al stock.</p>
-    <div class="dato">Movimiento: <strong id="modalAnularMovimiento"></strong></div>
-    <label>PIN administrador</label>
-    <input id="pinAnularHistorial" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN administrador">
-    <button class="gris" onclick="cerrarModalAnularHistorial()">CANCELAR</button>
-    <button id="btnConfirmarAnularHistorial" class="rojo" onclick="confirmarAnulacionDesdeHistorial()">ANULAR DESCUENTO</button>
-  </div>
-</div>
-
-<script>
-
 /*******************************************************
- * CONFIGURACION
+ * STOCK INTERNO BSF
+ * BACKEND / API
  *******************************************************/
 
-const URL_WORKER =
-  'https://stock-interno-bsf-api.bsfseeds-com-ar.workers.dev';
+const CONFIG = {
 
+  SPREADSHEET_ID:
+    '1XHq3aEO-EorR-ml66WEN9YZL2Se5jldC5Fhqh9JE9C0',
 
-const URL_APPS_SCRIPT =
-  'https://script.google.com/macros/s/AKfycbzAAJJJhxkTUt99JFfadXQT2IAKmOPS4PKRudeotALBeIAMn60uSktlcty9w9kJv06f/exec';
+  HOJA_CAJAS:
+    'CAJAS',
 
+  HOJA_PEDIDOS:
+    'PEDIDOS',
 
-let operacion = null;
+  HOJA_MOVIMIENTOS:
+    'MOVIMIENTOS',
 
-let cajaActual = null;
+  HOJA_PRODUCTOS:
+    'PRODUCTOS',
 
-let cantidadPendiente = 0;
+  HOJA_QR:
+  'QR_CAJAS',
 
-let lector = null;
+  HOJA_AJUSTES:
+    'AJUSTES_STOCK',
 
-let scannerActivo = false;
+  PROP_PIN:
+    'BSF_PRODUCCION_PIN',
 
-let consultaEnCurso = false;
+  PROP_ADMIN_PIN:
+    'BSF_ADMIN_PIN'
 
-let operacionEnCurso = false;
-
-let historialAbierto = false;
-
-let movimientoHistorialPendiente = null;
-
-let tipoAjusteForzado = null;
-let cajaAjusteActual = null;
-let lectorAjuste = null;
-let scannerAjusteActivo = false;
+};
 
 
 /*******************************************************
- * NAVEGACION
+ * ETAPA 1 - ADMINISTRACION DESDE GOOGLE SHEETS
  *******************************************************/
 
-function ocultarSecciones() {
+function onOpen() {
 
-  document
-    .getElementById(
-      'menuPrincipal'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'seccionProduccion'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'seccionVerPedido'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'seccionAdministrador'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-}
-
-
-function abrirProduccion() {
-
-  ocultarMensaje();
-
-  ocultarSecciones();
-
-
-  document
-    .getElementById(
-      'seccionProduccion'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-
-}
-
-
-function abrirVerPedido() {
-
-  ocultarMensaje();
-
-  ocultarSecciones();
-
-
-  document
-    .getElementById(
-      'seccionVerPedido'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-
-}
-
-
-function abrirAdministrador() {
-
-  ocultarMensaje();
-
-  ocultarSecciones();
-
-
-  document
-    .getElementById(
-      'seccionAdministrador'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-
-}
-
-
-async function volverMenu() {
-
-  ocultarMensaje();
-
-
-  /*
-   * Cerramos cámara si estaba activa.
-   */
-  await cerrarScanner();
-
-  await cerrarScannerAjuste();
-
-
-  ocultarSecciones();
-
-
-  document
-    .getElementById(
-      'menuPrincipal'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  SpreadsheetApp
+    .getUi()
+    .createMenu('📦 STOCK INTERNO BSF')
+    .addItem('➕ Agregar caja', 'abrirAgregarCaja')
+    .addItem('🔎 Buscar caja', 'abrirBuscarCaja')
+    .addItem('🔄 Cambiar estado de caja', 'abrirCambiarEstadoCaja')
+    .addSeparator()
+    .addItem('🏷️ Generar / actualizar QR', 'generarQR')
+    .addItem('✅ Verificar estructura', 'verificarEstructura')
+    .addSeparator()
+    .addItem('🔗 Probar conexión', 'probarConexionDesdeMenu')
+    .addToUi();
 
 }
 
 
 /*******************************************************
- * USUARIOS RECORDADOS
+ * FORMULARIO - AGREGAR CAJA
  *******************************************************/
 
-document.addEventListener(
-  'DOMContentLoaded',
-  function() {
+function abrirAgregarCaja() {
 
-    const usuarioProduccion =
-      localStorage.getItem(
-        'bsf_usuario_produccion'
-      );
+  const productos = obtenerProductosAdmin();
 
+  if (!productos.length) {
 
-    const usuarioAdmin =
-      localStorage.getItem(
-        'bsf_usuario_admin'
-      );
-
-
-    if (
-      usuarioProduccion
-    ) {
-
-      const select =
-        document.getElementById(
-          'usuario'
-        );
-
-
-      if (
-        Array.from(
-          select.options
-        ).some(
-          option =>
-            option.value ===
-            usuarioProduccion
-        )
-      ) {
-
-        select.value =
-          usuarioProduccion;
-
-      }
-
-    }
-
-
-    if (
-      usuarioAdmin
-    ) {
-
-      const selectAdmin =
-        document.getElementById(
-          'usuarioAnulacion'
-        );
-
-
-      if (
-        Array.from(
-          selectAdmin.options
-        ).some(
-          option =>
-            option.value ===
-            usuarioAdmin
-        )
-      ) {
-
-        selectAdmin.value =
-          usuarioAdmin;
-
-      }
-
-    }
-
-  }
-);
-
-
-function guardarUsuarioProduccion() {
-
-  const usuario =
-    document
-      .getElementById(
-        'usuario'
-      )
-      .value;
-
-
-  if (
-    usuario
-  ) {
-
-    localStorage.setItem(
-      'bsf_usuario_produccion',
-      usuario
+    SpreadsheetApp.getUi().alert(
+      'No hay productos cargados en la hoja PRODUCTOS.'
     );
 
+    return;
+
   }
 
-}
+  const opciones = productos
+    .map(function(p) {
+
+      return '<option value="' +
+        escaparHtmlAdmin_(p.id) +
+        '">' +
+        escaparHtmlAdmin_(p.nombre) +
+        (p.categoria
+          ? ' — ' + escaparHtmlAdmin_(p.categoria)
+          : '') +
+        '</option>';
+
+    })
+    .join('');
+
+  const html = HtmlService
+    .createHtmlOutput(
+
+      '<!DOCTYPE html>' +
+
+      '<html><head><base target="_top">' +
+
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+
+      '<style>' +
+
+      'body{font-family:Arial,sans-serif;padding:18px;color:#202124}' +
+
+      'label{display:block;font-weight:bold;margin:14px 0 6px}' +
+
+      'select,input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px}' +
+
+      'button{width:100%;padding:12px;margin-top:18px;border:0;border-radius:8px;background:#188038;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}' +
+
+      'button:disabled{opacity:.55}' +
+
+      '#msg{margin-top:14px;padding:10px;border-radius:7px;display:none}' +
+
+      '.ok{background:#e6f4ea;color:#137333}' +
+
+      '.err{background:#fce8e6;color:#a50e0e}' +
+
+      '</style></head><body>' +
+
+      '<h2>➕ Agregar caja</h2>' +
+
+      '<label>Producto</label>' +
+
+      '<select id="producto">' +
+      '<option value="">Seleccionar producto</option>' +
+      opciones +
+      '</select>' +
+
+      '<label>Cantidad inicial</label>' +
+
+      '<input id="cantidad" type="number" min="1" step="1" inputmode="numeric" placeholder="Ej: 500">' +
+
+      '<label>Estado</label>' +
+
+      '<select id="estado">' +
+      '<option value="GUARDADA">GUARDADA</option>' +
+      '<option value="EN USO">EN USO</option>' +
+      '</select>' +
+
+      '<button id="btn" onclick="guardar()">GUARDAR CAJA</button>' +
+
+      '<div id="msg"></div>' +
+
+      '<script>' +
+
+      'function mostrar(t,ok){' +
+      'var m=document.getElementById("msg");' +
+      'm.style.display="block";' +
+      'm.className=ok?"ok":"err";' +
+      'm.textContent=t;' +
+      '}' +
+
+      'function guardar(){' +
+
+      'var id=document.getElementById("producto").value;' +
+
+      'var cantidad=document.getElementById("cantidad").value;' +
+
+      'var estado=document.getElementById("estado").value;' +
+
+      'if(!id||!cantidad){' +
+      'mostrar("Completá producto y cantidad.",false);' +
+      'return;' +
+      '}' +
+
+      'var b=document.getElementById("btn");' +
+
+      'b.disabled=true;' +
+
+      'b.textContent="GUARDANDO...";' +
+
+      'google.script.run.withSuccessHandler(function(r){' +
+
+      'b.disabled=false;' +
+
+      'b.textContent="GUARDAR CAJA";' +
+
+      'mostrar("✅ Caja "+r.codigoCaja+" creada correctamente para "+r.producto+". Stock inicial: "+r.cantidadInicial+".",true);' +
+
+      'document.getElementById("cantidad").value="";' +
+
+      '}).withFailureHandler(function(e){' +
+
+      'b.disabled=false;' +
+
+      'b.textContent="GUARDAR CAJA";' +
+
+      'mostrar("⚠️ "+e.message,false);' +
+
+      '}).guardarCajaAdmin({' +
+      'idProducto:id,' +
+      'cantidad:cantidad,' +
+      'estado:estado' +
+      '});' +
+
+      '}' +
+
+      '</script></body></html>'
+
+    )
+
+    .setWidth(460)
+    .setHeight(540);
 
 
-function guardarUsuarioAdmin() {
-
-  const usuario =
-    document
-      .getElementById(
-        'usuarioAnulacion'
-      )
-      .value;
-
-
-  if (
-    usuario
-  ) {
-
-    localStorage.setItem(
-      'bsf_usuario_admin',
-      usuario
+  SpreadsheetApp
+    .getUi()
+    .showModalDialog(
+      html,
+      'Agregar caja'
     );
-
-  }
 
 }
 
 
 /*******************************************************
- * WORKER
+ * PRODUCTOS PARA ADMIN
  *******************************************************/
 
-async function llamarWorker(
-  datos
-) {
+function obtenerProductosAdmin() {
 
-  const respuesta =
-    await fetch(
-      URL_WORKER,
-      {
+  const ss = obtenerSpreadsheet_();
 
-        method:
-          'POST',
-
-        headers: {
-
-          'Content-Type':
-            'application/json'
-
-        },
-
-        body:
-          JSON.stringify(
-            datos
-          )
-
-      }
+  const hoja =
+    ss.getSheetByName(
+      CONFIG.HOJA_PRODUCTOS
     );
 
 
-  let resultado;
-
-
-  try {
-
-    resultado =
-      await respuesta.json();
-
-  } catch (error) {
+  if (!hoja) {
 
     throw new Error(
-      'El servidor respondió con un formato inválido.'
+      'No existe la hoja PRODUCTOS.'
     );
 
   }
 
 
-  return resultado;
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (ultimaFila < 2) {
+
+    return [];
+
+  }
+
+
+  const datos = hoja
+    .getRange(
+      2,
+      1,
+      ultimaFila - 1,
+      3
+    )
+    .getValues();
+
+
+  return datos
+
+    .filter(function(fila) {
+
+      return (
+        String(fila[0] || '').trim() &&
+        String(fila[1] || '').trim()
+      );
+
+    })
+
+    .map(function(fila) {
+
+      return {
+
+        id:
+          String(fila[0]).trim(),
+
+        nombre:
+          String(fila[1]).trim(),
+
+        categoria:
+          String(fila[2] || '').trim()
+
+      };
+
+    });
 
 }
 
 
 /*******************************************************
- * VER PEDIDO
+ * GUARDAR NUEVA CAJA
  *******************************************************/
 
-function buscarPedido() {
+function guardarCajaAdmin(datos) {
 
-  ocultarMensaje();
+  if (!datos) {
 
-
-  const pedido =
-    document
-      .getElementById(
-        'pedidoConsultar'
-      )
-      .value
-      .trim();
-
-
-  if (!pedido) {
-
-    mostrarError(
-      'Ingresá el número de pedido.'
+    throw new Error(
+      'No se recibieron datos.'
     );
-
-    return;
 
   }
 
 
-  const boton =
-    document.getElementById(
-      'btnConsultarPedido'
-    );
-
-
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'BUSCANDO...';
-
-
-  document
-    .getElementById(
-      'resultadoPedido'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'cargandoPedido'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  llamarApiJsonp(
-
-    {
-
-      accion:
-        'consultarPedido',
-
-      pedido:
-        pedido
-
-    },
-
-    function(datos) {
-
-      boton.disabled =
-        false;
-
-
-      boton.textContent =
-        'BUSCAR PEDIDO';
-
-
-      document
-        .getElementById(
-          'cargandoPedido'
-        )
-        .classList
-        .add(
-          'oculto'
-        );
-
-
-      if (
-        !datos ||
-        !datos.ok
-      ) {
-
-        mostrarError(
-          datos &&
-          datos.error
-            ? datos.error
-            : 'No se pudo consultar el pedido.'
-        );
-
-        return;
-
-      }
-
-
-      mostrarPedidoConsultado(
-        datos.pedido
-      );
-
-    },
-
-    function(error) {
-
-      boton.disabled =
-        false;
-
-
-      boton.textContent =
-        'BUSCAR PEDIDO';
-
-
-      document
-        .getElementById(
-          'cargandoPedido'
-        )
-        .classList
-        .add(
-          'oculto'
-        );
-
-
-      mostrarError(
-        error
-      );
-
-    }
-
-  );
-
-}
-
-
-/*******************************************************
- * MOSTRAR PEDIDO CONSULTADO
- *******************************************************/
-
-function mostrarPedidoConsultado(
-  pedido
-) {
-
-  const contenedor =
-    document.getElementById(
-      'resultadoPedido'
-    );
-
-
-  contenedor.innerHTML =
-    '';
-
-
-  const resumen =
-    document.createElement(
-      'div'
-    );
-
-
-  resumen.className =
-    'resumen-pedido';
-
-
-  resumen.innerHTML =
-
-    '<div class="resumen-numero">' +
-      'Pedido ' +
-      escaparHtml(
-        pedido.numeroPedido
-      ) +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Cliente: <strong>' +
-      escaparHtml(
-        pedido.cliente
-      ) +
-      '</strong>' +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Operaciones: <strong>' +
-      pedido.cantidadOperaciones +
-      '</strong>' +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Movimientos registrados: <strong>' +
-      pedido.cantidadMovimientos +
-      '</strong>' +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Movimientos activos: <strong>' +
-      pedido.movimientosActivos +
-      '</strong>' +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Movimientos anulados: <strong>' +
-      pedido.movimientosAnulados +
-      '</strong>' +
-    '</div>' +
-
-    '<div class="dato">' +
-      'Packings actualmente descontados:' +
-    '</div>' +
-
-    '<div class="packings-resumen">' +
-      pedido.packingsActivos +
-    '</div>';
-
-
-  contenedor.appendChild(
-    resumen
-  );
-
-
-  pedido.operaciones
-    .forEach(
-      function(op) {
-
-        const tarjetaOperacion =
-          document.createElement(
-            'div'
-          );
-
-
-        tarjetaOperacion.className =
-          'operacion-card';
-
-
-        let claseEstado =
-          '';
-
-
-        if (
-          op.estado ===
-          'ACTIVO'
-        ) {
-
-          claseEstado =
-            'estado-activo';
-
-        }
-
-
-        if (
-          op.estado ===
-          'ANULADO'
-        ) {
-
-          claseEstado =
-            'estado-anulado';
-
-        }
-
-
-        if (
-          op.estado ===
-          'FINALIZADO'
-        ) {
-
-          claseEstado =
-            'estado-finalizado';
-
-        }
-
-
-        tarjetaOperacion.innerHTML =
-
-          '<div class="operacion-titulo">' +
-            escaparHtml(
-              op.idOperacion
-            ) +
-          '</div>' +
-
-          '<div class="dato">' +
-            'Estado: <span class="' +
-            claseEstado +
-            '">' +
-            escaparHtml(
-              op.estado
-            ) +
-            '</span>' +
-          '</div>' +
-
-          '<div class="dato">' +
-            'Fecha: <strong>' +
-            escaparHtml(
-              op.fecha
-            ) +
-            '</strong>' +
-          '</div>' +
-
-          '<div class="dato">' +
-            'Usuario: <strong>' +
-            escaparHtml(
-              op.usuario
-            ) +
-            '</strong>' +
-          '</div>';
-
-
-        if (
-          !Array.isArray(
-            op.movimientos
-          ) ||
-          op.movimientos.length === 0
-        ) {
-
-          const sinMovimientos =
-            document.createElement(
-              'div'
-            );
-
-
-          sinMovimientos.className =
-            'movimiento-card';
-
-
-          sinMovimientos.textContent =
-            'Esta operación no tiene movimientos registrados.';
-
-
-          tarjetaOperacion
-            .appendChild(
-              sinMovimientos
-            );
-
-        }
-
-
-        op.movimientos
-          .forEach(
-            function(mov) {
-
-              const tarjetaMovimiento =
-                document.createElement(
-                  'div'
-                );
-
-
-              const estadoMovimiento =
-                String(
-                  mov.estado || ''
-                )
-                  .toUpperCase();
-
-
-              tarjetaMovimiento.className =
-                'movimiento-card ' +
-                (
-                  estadoMovimiento ===
-                  'ANULADO'
-                    ? 'anulado'
-                    : 'activo'
-                );
-
-
-              let detalleAnulacion =
-                '';
-
-
-              if (
-                estadoMovimiento ===
-                'ANULADO'
-              ) {
-
-                detalleAnulacion =
-
-                  '<div class="dato">' +
-                    'Fecha anulación: <strong>' +
-                    escaparHtml(
-                      mov.fechaAnulacion || ''
-                    ) +
-                    '</strong>' +
-                  '</div>' +
-
-                  '<div class="dato">' +
-                    'Anulado por: <strong>' +
-                    escaparHtml(
-                      mov.usuarioAnulacion || ''
-                    ) +
-                    '</strong>' +
-                  '</div>';
-
-              }
-
-
-              tarjetaMovimiento.innerHTML =
-
-                '<div class="movimiento-titulo">' +
-                  escaparHtml(
-                    mov.producto
-                  ) +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Movimiento: <strong>' +
-                  escaparHtml(
-                    mov.idMovimiento
-                  ) +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Caja: <strong>' +
-                  escaparHtml(
-                    mov.codigoCaja
-                  ) +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Descontado: <strong>' +
-                  mov.cantidadDescontada +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Stock: <strong>' +
-                  mov.cantidadAntes +
-                  ' → ' +
-                  mov.cantidadDespues +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Usuario: <strong>' +
-                  escaparHtml(
-                    mov.usuario
-                  ) +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Fecha: <strong>' +
-                  escaparHtml(
-                    mov.fecha
-                  ) +
-                  '</strong>' +
-                '</div>' +
-
-                '<div class="dato">' +
-                  'Estado: <span class="' +
-                  (
-                    estadoMovimiento ===
-                    'ANULADO'
-                      ? 'estado-anulado'
-                      : 'estado-activo'
-                  ) +
-                  '">' +
-                  escaparHtml(
-                    estadoMovimiento
-                  ) +
-                  '</span>' +
-                '</div>' +
-
-                detalleAnulacion;
-
-
-              tarjetaOperacion
-                .appendChild(
-                  tarjetaMovimiento
-                );
-
-            }
-          );
-
-
-        contenedor
-          .appendChild(
-            tarjetaOperacion
-          );
-
-      }
-    );
-
-
-  contenedor.classList.remove(
-    'oculto'
-  );
-
-}
-
-
-/*******************************************************
- * INICIAR PEDIDO
- *******************************************************/
-
-async function iniciarPedido() {
-
-  ocultarMensaje();
-
-
-  if (
-    operacionEnCurso
-  ) {
-
-    return;
-
-  }
-
-
-  const pin =
-    document
-      .getElementById(
-        'pin'
-      )
-      .value
-      .trim();
-
-
-  const usuario =
-    document
-      .getElementById(
-        'usuario'
-      )
-      .value
-      .trim();
-
-
-  const pedido =
-    document
-      .getElementById(
-        'pedido'
-      )
-      .value
-      .trim();
-
-
-  const cliente =
-    document
-      .getElementById(
-        'cliente'
-      )
-      .value
-      .trim();
-
-
-  if (
-    !pin ||
-    !usuario ||
-    !pedido ||
-    !cliente
-  ) {
-
-    mostrarError(
-      'Completá PIN, usuario, pedido y cliente.'
-    );
-
-    return;
-
-  }
-
-
-  guardarUsuarioProduccion();
-
-
-  const boton =
-    document.getElementById(
-      'btnIniciar'
-    );
-
-
-  operacionEnCurso =
-    true;
-
-
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'INICIANDO...';
-
-
-  try {
-
-    const resultado =
-      await llamarWorker({
-
-        accion:
-          'iniciarPedido',
-
-        pin:
-          pin,
-
-        usuario:
-          usuario,
-
-        pedido:
-          pedido,
-
-        cliente:
-          cliente
-
-      });
-
-
-    if (
-      !resultado.ok
-    ) {
-
-      throw new Error(
-        resultado.error ||
-        'No se pudo iniciar el pedido.'
-      );
-
-    }
-
-
-    operacion = {
-
-      idOperacion:
-        resultado.idOperacion,
-
-      pedido:
-        resultado.pedido,
-
-      cliente:
-        resultado.cliente,
-
-      usuario:
-        resultado.usuario,
-
-      estado:
-        resultado.estado,
-
-      pin:
-        pin
-
-    };
-
-
-    document
-      .getElementById(
-        'pedidoActivo'
-      )
-      .textContent =
-        operacion.pedido;
-
-
-    document
-      .getElementById(
-        'clienteActivo'
-      )
-      .textContent =
-        operacion.cliente;
-
-
-    document
-      .getElementById(
-        'usuarioActivo'
-      )
-      .textContent =
-        operacion.usuario;
-
-
-    document
-      .getElementById(
-        'operacionActiva'
-      )
-      .textContent =
-        operacion.idOperacion;
-
-
-    document
-      .getElementById(
-        'pantallaInicio'
-      )
-      .classList
-      .add(
-        'oculto'
-      );
-
-
-    document
-      .getElementById(
-        'pantallaPedido'
-      )
-      .classList
-      .remove(
-        'oculto'
-      );
-
-
-    mostrarOk(
-      '✅ Pedido iniciado correctamente.'
-    );
-
-
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  } finally {
-
-    operacionEnCurso =
-      false;
-
-
-    boton.disabled =
-      false;
-
-
-    boton.textContent =
-      'INICIAR PEDIDO';
-
-  }
-
-}
-
-
-/*******************************************************
- * CONSULTAR CAJA
- *******************************************************/
-
-function buscarCajaManual() {
-
-  const codigo =
-    document
-      .getElementById(
-        'codigoManual'
-      )
-      .value
-      .trim();
-
-
-  if (!codigo) {
-
-    mostrarError(
-      'Ingresá un código de caja.'
-    );
-
-    return;
-
-  }
-
-
-  consultarCaja(
-    codigo
-  );
-
-}
-
-
-function consultarCaja(
-  codigo
-) {
-
-  if (
-    consultaEnCurso
-  ) {
-
-    return;
-
-  }
-
-
-  consultaEnCurso =
-    true;
-
-
-  ocultarMensaje();
-
-
-  document
-    .getElementById(
-      'tarjetaCaja'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'cargandoCaja'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-
-  llamarApiJsonp(
-
-    {
-
-      accion:
-        'consultarCaja',
-
-      codigo:
-        codigo
-
-    },
-
-    function(datos) {
-
-      consultaEnCurso =
-        false;
-
-
-      document
-        .getElementById(
-          'cargandoCaja'
-        )
-        .classList
-        .add(
-          'oculto'
-        );
-
-
-      if (
-        !datos ||
-        !datos.ok
-      ) {
-
-        mostrarError(
-          datos &&
-          datos.error
-            ? datos.error
-            : 'No se pudo consultar la caja.'
-        );
-
-        return;
-
-      }
-
-
-      cajaActual =
-        datos.caja;
-
-
-      mostrarCaja();
-
-    },
-
-    function(error) {
-
-      consultaEnCurso =
-        false;
-
-
-      document
-        .getElementById(
-          'cargandoCaja'
-        )
-        .classList
-        .add(
-          'oculto'
-        );
-
-
-      mostrarError(
-        error
-      );
-
-    }
-
-  );
-
-}
-
-
-/*******************************************************
- * MOSTRAR CAJA
- *******************************************************/
-
-function mostrarCaja() {
-
-  document
-    .getElementById(
-      'productoCaja'
-    )
-    .textContent =
-      cajaActual.producto;
-
-
-  document
-    .getElementById(
-      'codigoCaja'
-    )
-    .textContent =
-      cajaActual.codigoCaja;
-
-
-  document
-    .getElementById(
-      'stockCaja'
-    )
-    .textContent =
-      cajaActual.cantidadActual;
-
-
-  const estado =
-    document.getElementById(
-      'estadoCaja'
-    );
-
-
-  estado.textContent =
-    cajaActual.estado;
-
-
-  estado.className =
-    '';
-
-
-  if (
+  const idProducto =
     String(
-      cajaActual.estado
-    )
-      .trim()
-      .toUpperCase() ===
-    'EN USO'
-  ) {
-
-    estado.classList.add(
-      'estado-uso'
-    );
-
-  } else {
-
-    estado.classList.add(
-      'estado-guardada'
-    );
-
-  }
-
-
-  document
-    .getElementById(
-      'cantidadDescontar'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'codigoManual'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'tarjetaCaja'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-}
-
-
-/*******************************************************
- * PREPARAR DESCUENTO
- *******************************************************/
-
-function prepararDescuento() {
-
-  ocultarMensaje();
-
-
-  if (
-    !operacion ||
-    !cajaActual
-  ) {
-
-    mostrarError(
-      'No hay una caja seleccionada.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    String(
-      cajaActual.estado
-    )
-      .trim()
-      .toUpperCase() !==
-    'EN USO'
-  ) {
-
-    mostrarError(
-      'Esta caja no está EN USO.'
-    );
-
-    return;
-
-  }
+      datos.idProducto || ''
+    ).trim();
 
 
   const cantidad =
     Number(
-      document
-        .getElementById(
-          'cantidadDescontar'
-        )
-        .value
+      datos.cantidad
     );
 
 
-  if (
-    !Number.isInteger(
-      cantidad
-    ) ||
-    cantidad <= 0
-  ) {
-
-    mostrarError(
-      'Ingresá una cantidad válida.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    cantidad >
-    Number(
-      cajaActual.cantidadActual
+  const estado =
+    String(
+      datos.estado || 'GUARDADA'
     )
-  ) {
-
-    mostrarError(
-      'Stock insuficiente.'
-    );
-
-    return;
-
-  }
-
-
-  cantidadPendiente =
-    cantidad;
-
-
-  const despues =
-    Number(
-      cajaActual.cantidadActual
-    ) -
-    cantidad;
-
-
-  document
-    .getElementById(
-      'modalCantidad'
-    )
-    .textContent =
-      cantidad +
-      (
-        cantidad === 1
-          ? ' packing'
-          : ' packings'
-      );
-
-
-  document
-    .getElementById(
-      'modalProducto'
-    )
-    .textContent =
-      cajaActual.producto;
-
-
-  document
-    .getElementById(
-      'modalCaja'
-    )
-    .textContent =
-      cajaActual.codigoCaja;
-
-
-  document
-    .getElementById(
-      'modalAntes'
-    )
-    .textContent =
-      cajaActual.cantidadActual;
-
-
-  document
-    .getElementById(
-      'modalDespues'
-    )
-    .textContent =
-      despues;
-
-
-  document
-    .getElementById(
-      'modalDescuento'
-    )
-    .classList
-    .remove(
-      'oculto'
-    );
-
-}
-
-
-/*******************************************************
- * DESCONTAR
- *******************************************************/
-
-async function ejecutarDescuento() {
-
-  if (
-    operacionEnCurso ||
-    !operacion ||
-    !cajaActual ||
-    !cantidadPendiente
-  ) {
-
-    return;
-
-  }
-
-
-  const boton =
-    document.getElementById(
-      'btnDescontar'
-    );
-
-
-  operacionEnCurso =
-    true;
-
-
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'DESCONTANDO...';
-
-
-  try {
-
-    const resultado =
-      await llamarWorker({
-
-        accion:
-          'descontar',
-
-        pin:
-          operacion.pin,
-
-        idOperacion:
-          operacion.idOperacion,
-
-        codigoCaja:
-          cajaActual.codigoCaja,
-
-        cantidad:
-          cantidadPendiente,
-
-        usuario:
-          operacion.usuario
-
-      });
-
-
-    if (
-      !resultado.ok
-    ) {
-
-      throw new Error(
-        resultado.error ||
-        'No se pudo descontar.'
-      );
-
-    }
-
-
-    cerrarModalDescuento();
-
-
-    mostrarOk(
-      '✅ ' +
-      resultado.producto +
-      ': se descontaron ' +
-      resultado.cantidadDescontada +
-      (
-        resultado.cantidadDescontada === 1
-          ? ' packing. '
-          : ' packings. '
-      ) +
-      'Stock ' +
-      resultado.cantidadAntes +
-      ' → ' +
-      resultado.cantidadDespues +
-      '.'
-    );
-
-
-    limpiarCaja();
-
-
-    if (
-      historialAbierto
-    ) {
-
-      cargarHistorialDescuentos();
-
-    }
-
-
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  } finally {
-
-    operacionEnCurso =
-      false;
-
-
-    boton.disabled =
-      false;
-
-
-    boton.textContent =
-      'SÍ, DESCONTAR';
-
-  }
-
-}
-
-
-/*******************************************************
- * FINALIZAR PEDIDO
- *******************************************************/
-
-async function pedirFinalizarPedido() {
-
-  if (
-    operacionEnCurso ||
-    !operacion
-  ) {
-
-    return;
-
-  }
-
-
-  const confirmar =
-    window.confirm(
-      '¿Estás seguro de que querés finalizar el pedido ' +
-      operacion.pedido +
-      '?'
-    );
-
-
-  if (!confirmar) {
-
-    return;
-
-  }
-
-
-  const boton =
-    document.getElementById(
-      'btnFinalizar'
-    );
-
-
-  operacionEnCurso =
-    true;
-
-
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'FINALIZANDO...';
-
-
-  try {
-
-    const resultado =
-      await llamarWorker({
-
-        accion:
-          'finalizarPedido',
-
-        pin:
-          operacion.pin,
-
-        idOperacion:
-          operacion.idOperacion
-
-      });
-
-
-    if (
-      !resultado.ok
-    ) {
-
-      throw new Error(
-        resultado.error ||
-        'No se pudo finalizar.'
-      );
-
-    }
-
-
-    await cerrarScanner();
-
-
-    operacion =
-      null;
-
-
-    cajaActual =
-      null;
-
-
-    cantidadPendiente =
-      0;
-
-
-    document
-      .getElementById(
-        'pantallaPedido'
-      )
-      .classList
-      .add(
-        'oculto'
-      );
-
-
-    document
-      .getElementById(
-        'pantallaInicio'
-      )
-      .classList
-      .remove(
-        'oculto'
-      );
-
-
-    document
-      .getElementById(
-        'pedido'
-      )
-      .value =
-        '';
-
-
-    document
-      .getElementById(
-        'cliente'
-      )
-      .value =
-        '';
-
-
-    document
-      .getElementById(
-        'pin'
-      )
-      .value =
-        '';
-
-
-    reiniciarHistorialDescuentos();
-
-
-    mostrarOk(
-      '✅ Pedido finalizado correctamente.'
-    );
-
-
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  } finally {
-
-    operacionEnCurso =
-      false;
-
-
-    boton.disabled =
-      false;
-
-
-    boton.textContent =
-      'FINALIZAR PEDIDO';
-
-  }
-
-}
-
-
-/*******************************************************
- * ADMIN - ANULAR MOVIMIENTO
- *******************************************************/
-
-async function pedirAnularMovimiento() {
-
-  ocultarMensaje();
-
-
-  const pin =
-    document
-      .getElementById(
-        'pinAdmin'
-      )
-      .value
-      .trim();
-
-
-  const usuario =
-    document
-      .getElementById(
-        'usuarioAnulacion'
-      )
-      .value
-      .trim();
-
-
-  const movimiento =
-    document
-      .getElementById(
-        'idMovimientoAnular'
-      )
-      .value
       .trim()
       .toUpperCase();
 
 
+  if (!idProducto) {
+
+    throw new Error(
+      'Seleccioná un producto.'
+    );
+
+  }
+
+
   if (
-    !pin ||
-    !usuario ||
-    !movimiento
+    !Number.isInteger(cantidad) ||
+    cantidad <= 0
   ) {
 
-    mostrarError(
-      'Completá PIN admin, usuario y movimiento.'
+    throw new Error(
+      'La cantidad inicial debe ser un número entero mayor a 0.'
     );
-
-    return;
 
   }
 
 
-  guardarUsuarioAdmin();
+  if (
+    ['GUARDADA', 'EN USO']
+      .indexOf(estado) === -1
+  ) {
 
-
-  const confirmar =
-    window.confirm(
-      '¿Estás seguro de que querés anular ' +
-      movimiento +
-      '?\n\nEl stock descontado será devuelto a la caja.'
+    throw new Error(
+      'Estado inválido.'
     );
-
-
-  if (!confirmar) {
-
-    return;
 
   }
 
 
-  const boton =
-    document.getElementById(
-      'btnAnularMovimiento'
-    );
+  const lock =
+    LockService.getScriptLock();
 
 
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'ANULANDO...';
+  lock.waitLock(
+    15000
+  );
 
 
   try {
 
-    const resultado =
-      await llamarWorker({
-
-        accion:
-          'anularMovimiento',
-
-        pin:
-          pin,
-
-        idMovimiento:
-          movimiento,
-
-        usuarioAnulacion:
-          usuario
-
-      });
+    const ss =
+      obtenerSpreadsheet_();
 
 
-    if (
-      !resultado.ok
-    ) {
+    const hojaProductos =
+      ss.getSheetByName(
+        CONFIG.HOJA_PRODUCTOS
+      );
+
+
+    const hojaCajas =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    if (!hojaProductos) {
 
       throw new Error(
-        resultado.error ||
-        'No se pudo anular el movimiento.'
+        'No existe la hoja PRODUCTOS.'
       );
 
     }
 
 
-    mostrarResultadoAdmin(
-      '✅ MOVIMIENTO ANULADO\n\n' +
-      'Movimiento: ' +
-      resultado.idMovimiento +
-      '\n' +
-      'Pedido: ' +
-      resultado.pedido +
-      '\n' +
-      'Producto: ' +
-      resultado.producto +
-      '\n' +
-      'Caja: ' +
-      resultado.codigoCaja +
-      '\n' +
-      'Cantidad devuelta: ' +
-      resultado.cantidadDevuelta +
-      '\n' +
-      'Stock: ' +
-      resultado.stockAntes +
-      ' → ' +
-      resultado.stockDespues
-    );
+    if (!hojaCajas) {
+
+      throw new Error(
+        'No existe la hoja CAJAS.'
+      );
+
+    }
 
 
-    document
-      .getElementById(
-        'idMovimientoAnular'
+    const producto =
+      buscarProductoPorIdAdmin_(
+        hojaProductos,
+        idProducto
+      );
+
+
+    if (!producto) {
+
+      throw new Error(
+        'No se encontró el producto seleccionado.'
+      );
+
+    }
+
+
+    const siguiente =
+      obtenerSiguienteNumeroCajaAdmin_(
+        hojaCajas
+      );
+
+
+    const idCaja =
+      'CAJ-' +
+      String(siguiente)
+        .padStart(6, '0');
+
+
+    const codigoCaja =
+      'CJ-' +
+      String(siguiente)
+        .padStart(6, '0');
+
+
+    const contenidoQR =
+      'STOCK-BSF|' +
+      codigoCaja;
+
+
+    const fecha =
+      new Date();
+
+
+    hojaCajas.appendRow([
+
+      idCaja,
+
+      codigoCaja,
+
+      contenidoQR,
+
+      producto.id,
+
+      producto.nombre,
+
+      cantidad,
+
+      cantidad,
+
+      estado,
+
+      fecha
+
+    ]);
+
+
+    const fila =
+      hojaCajas.getLastRow();
+
+
+    hojaCajas
+      .getRange(
+        fila,
+        6,
+        1,
+        2
       )
-      .value =
-        '';
+      .setNumberFormat('0');
 
 
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
+    hojaCajas
+      .getRange(
+        fila,
+        9
       )
-    );
+      .setNumberFormat(
+        'dd/MM/yyyy HH:mm:ss'
+      );
+
+
+    SpreadsheetApp.flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      idCaja:
+        idCaja,
+
+      codigoCaja:
+        codigoCaja,
+
+      qr:
+        contenidoQR,
+
+      idProducto:
+        producto.id,
+
+      producto:
+        producto.nombre,
+
+      cantidadInicial:
+        cantidad,
+
+      cantidadActual:
+        cantidad,
+
+      estado:
+        estado
+
+    };
+
 
   } finally {
 
-    boton.disabled =
-      false;
-
-
-    boton.textContent =
-      'ANULAR MOVIMIENTO';
+    lock.releaseLock();
 
   }
 
@@ -3225,1550 +538,1166 @@ async function pedirAnularMovimiento() {
 
 
 /*******************************************************
- * ADMIN - ANULAR PEDIDO COMPLETO
+ * BUSCAR PRODUCTO POR ID
  *******************************************************/
 
-async function pedirAnularPedidoCompleto() {
+function buscarProductoPorIdAdmin_(
+  hoja,
+  idProducto
+) {
 
-  ocultarMensaje();
-
-
-  const pin =
-    document
-      .getElementById(
-        'pinAdmin'
-      )
-      .value
-      .trim();
-
-
-  const usuario =
-    document
-      .getElementById(
-        'usuarioAnulacion'
-      )
-      .value
-      .trim();
-
-
-  const pedido =
-    document
-      .getElementById(
-        'pedidoAnular'
-      )
-      .value
-      .trim();
+  const ultimaFila =
+    hoja.getLastRow();
 
 
   if (
-    !pin ||
-    !usuario ||
-    !pedido
+    ultimaFila < 2
   ) {
 
-    mostrarError(
-      'Completá PIN admin, usuario y pedido.'
-    );
-
-    return;
+    return null;
 
   }
 
 
-  guardarUsuarioAdmin();
+  const datos =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        3
+      )
+      .getValues();
 
 
-  const confirmar1 =
-    window.confirm(
-      '¿Querés anular COMPLETAMENTE el pedido ' +
-      pedido +
-      '?\n\nSe devolverá al stock todo lo descontado en todas sus operaciones.'
-    );
-
-
-  if (!confirmar1) {
-
-    return;
-
-  }
-
-
-  const confirmar2 =
-    window.confirm(
-      'CONFIRMACIÓN FINAL\n\nPedido: ' +
-      pedido +
-      '\n\nEsta acción anulará todas las operaciones y movimientos activos del pedido.\n\n¿Continuar?'
-    );
-
-
-  if (!confirmar2) {
-
-    return;
-
-  }
-
-
-  const boton =
-    document.getElementById(
-      'btnAnularPedido'
-    );
-
-
-  boton.disabled =
-    true;
-
-
-  boton.textContent =
-    'ANULANDO PEDIDO...';
-
-
-  try {
-
-    const resultado =
-      await llamarWorker({
-
-        accion:
-          'anularPedidoCompleto',
-
-        pin:
-          pin,
-
-        pedido:
-          pedido,
-
-        usuarioAnulacion:
-          usuario
-
-      });
-
+  for (
+    let i = 0;
+    i < datos.length;
+    i++
+  ) {
 
     if (
-      !resultado.ok
+      String(
+        datos[i][0] || ''
+      ).trim() ===
+      idProducto
     ) {
 
-      throw new Error(
-        resultado.error ||
-        'No se pudo anular el pedido.'
-      );
+      return {
+
+        id:
+          String(
+            datos[i][0]
+          ).trim(),
+
+        nombre:
+          String(
+            datos[i][1] || ''
+          ).trim(),
+
+        categoria:
+          String(
+            datos[i][2] || ''
+          ).trim()
+
+      };
 
     }
 
-
-    let detalleCajas =
-      '';
+  }
 
 
-    if (
-      Array.isArray(
-        resultado.cajasDevueltas
+  return null;
+
+}
+
+
+/*******************************************************
+ * SIGUIENTE NUMERO DE CAJA
+ *******************************************************/
+
+function obtenerSiguienteNumeroCajaAdmin_(
+  hoja
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return 1;
+
+  }
+
+
+  const codigos =
+    hoja
+      .getRange(
+        2,
+        2,
+        ultimaFila - 1,
+        1
       )
-    ) {
+      .getValues();
 
-      resultado.cajasDevueltas
-        .forEach(
-          function(caja) {
 
-            detalleCajas +=
-              '\n' +
-              caja.codigoCaja +
-              ' - ' +
-              caja.producto +
-              ': +' +
-              caja.cantidadDevuelta +
-              ' (' +
-              caja.stockAntes +
-              ' → ' +
-              caja.stockDespues +
-              ')';
+  let maximo =
+    0;
 
-          }
+
+  codigos.forEach(
+    function(fila) {
+
+      const match =
+        String(
+          fila[0] || ''
+        )
+          .trim()
+          .toUpperCase()
+          .match(
+            /^CJ-(\d+)$/
+          );
+
+
+      if (!match) {
+
+        return;
+
+      }
+
+
+      const numero =
+        Number(
+          match[1]
         );
 
-    }
 
+      if (
+        numero >
+        maximo
+      ) {
 
-    mostrarResultadoAdmin(
-      '✅ PEDIDO ANULADO COMPLETAMENTE\n\n' +
-      'Pedido: ' +
-      resultado.pedido +
-      '\n' +
-      'Operaciones anuladas: ' +
-      resultado.cantidadOperaciones +
-      '\n' +
-      'Movimientos anulados: ' +
-      resultado.cantidadMovimientos +
-      '\n\n' +
-      'Stock devuelto:' +
-      detalleCajas
-    );
+        maximo =
+          numero;
 
-
-    document
-      .getElementById(
-        'pedidoAnular'
-      )
-      .value =
-        '';
-
-
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  } finally {
-
-    boton.disabled =
-      false;
-
-
-    boton.textContent =
-      'ANULAR PEDIDO COMPLETO';
-
-  }
-
-}
-
-
-
-
-/*******************************************************
- * HISTORIAL DE DESCUENTOS - PEDIDO ACTIVO
- *******************************************************/
-
-function alternarHistorialDescuentos() {
-  const contenedor = document.getElementById('contenedorHistorialDescuentos');
-  const boton = document.getElementById('btnHistorialDescuentos');
-  if (historialAbierto) {
-    historialAbierto = false;
-    contenedor.classList.add('oculto');
-    boton.textContent = '↶ VER HISTORIAL DE DESCUENTOS';
-    return;
-  }
-  historialAbierto = true;
-  contenedor.classList.remove('oculto');
-  boton.textContent = '↑ OCULTAR HISTORIAL';
-  cargarHistorialDescuentos();
-}
-
-function cargarHistorialDescuentos() {
-  if (!operacion || !operacion.pedido || !operacion.idOperacion) {
-    mostrarError('No hay un pedido activo.');
-    return;
-  }
-  const cargando = document.getElementById('cargandoHistorial');
-  const lista = document.getElementById('listaHistorialDescuentos');
-  cargando.classList.remove('oculto');
-  lista.innerHTML = '';
-  llamarApiJsonp(
-    { accion: 'consultarPedido', pedido: operacion.pedido },
-    function(datos) {
-      cargando.classList.add('oculto');
-      if (!datos || !datos.ok || !datos.pedido) {
-        lista.innerHTML = '<div class="historial-vacio">No se pudo cargar el historial.</div>';
-        return;
       }
-      mostrarHistorialOperacion(datos.pedido);
-    },
-    function(error) {
-      cargando.classList.add('oculto');
-      lista.innerHTML = '<div class="historial-vacio">' + escaparHtml(error) + '</div>';
+
     }
   );
-}
 
-function mostrarHistorialOperacion(pedidoConsultado) {
-  const lista = document.getElementById('listaHistorialDescuentos');
-  lista.innerHTML = '';
-  if (!pedidoConsultado || !Array.isArray(pedidoConsultado.operaciones)) {
-    lista.innerHTML = '<div class="historial-vacio">No hay movimientos registrados.</div>';
-    return;
-  }
-  const opActual = pedidoConsultado.operaciones.find(function(op) {
-    return String(op.idOperacion) === String(operacion.idOperacion);
-  });
-  if (!opActual || !Array.isArray(opActual.movimientos) || opActual.movimientos.length === 0) {
-    lista.innerHTML = '<div class="historial-vacio">Todavía no se realizaron descuentos en este pedido.</div>';
-    return;
-  }
-  let cantidadActiva = 0;
-  let movimientosActivos = 0;
-  let movimientosAnulados = 0;
-  opActual.movimientos.forEach(function(mov) {
-    const estado = String(mov.estado || '').trim().toUpperCase();
-    if (estado === 'ACTIVO') {
-      movimientosActivos++;
-      cantidadActiva += Number(mov.cantidadDescontada) || 0;
-    }
-    if (estado === 'ANULADO') movimientosAnulados++;
-  });
-  const resumen = document.createElement('div');
-  resumen.className = 'historial-resumen';
-  resumen.innerHTML = '<strong>' + movimientosActivos + '</strong> descuentos activos · <strong>' + cantidadActiva + '</strong> packings descontados · <strong>' + movimientosAnulados + '</strong> anulados';
-  lista.appendChild(resumen);
 
-  opActual.movimientos.forEach(function(mov) {
-    const estado = String(mov.estado || '').trim().toUpperCase();
-    const cantidad = Number(mov.cantidadDescontada) || 0;
-    const fila = document.createElement('div');
-    fila.className = 'historial-fila';
+  return (
+    maximo + 1
+  );
 
-    const producto = document.createElement('div');
-    producto.className = 'historial-producto';
-    producto.textContent = String(mov.producto || '') + ' - ' + cantidad + (cantidad === 1 ? ' packing' : ' packings');
-
-    const detalle = document.createElement('div');
-    detalle.className = 'historial-detalle';
-
-    const movimiento = document.createElement('span');
-    movimiento.className = 'historial-mov';
-    movimiento.textContent = String(mov.idMovimiento || '');
-
-    const estadoTexto = document.createElement('span');
-    if (estado === 'ANULADO') {
-      estadoTexto.className = 'historial-anulado';
-      estadoTexto.textContent = '✕ ANULADO';
-    } else {
-      estadoTexto.className = 'historial-ok';
-      estadoTexto.textContent = '✓ DESCONTADO EXITOSAMENTE';
-    }
-
-    detalle.appendChild(movimiento);
-    detalle.appendChild(estadoTexto);
-
-    if (estado !== 'ANULADO') {
-      const boton = document.createElement('button');
-      boton.className = 'btn-anular-lista';
-      boton.textContent = 'ANULAR';
-      boton.onclick = function() {
-        abrirModalAnularHistorial({
-          idMovimiento: mov.idMovimiento,
-          producto: mov.producto,
-          cantidad: cantidad
-        });
-      };
-      detalle.appendChild(boton);
-    }
-
-    fila.appendChild(producto);
-    fila.appendChild(detalle);
-    lista.appendChild(fila);
-  });
-}
-
-function abrirModalAnularHistorial(movimiento) {
-  movimientoHistorialPendiente = movimiento;
-  document.getElementById('modalAnularProducto').textContent = movimiento.producto;
-  document.getElementById('modalAnularCantidad').textContent = movimiento.cantidad + (movimiento.cantidad === 1 ? ' packing' : ' packings');
-  document.getElementById('modalAnularMovimiento').textContent = movimiento.idMovimiento;
-  document.getElementById('pinAnularHistorial').value = '';
-  document.getElementById('modalAnularHistorial').classList.remove('oculto');
-}
-
-function cerrarModalAnularHistorial() {
-  movimientoHistorialPendiente = null;
-  document.getElementById('modalAnularHistorial').classList.add('oculto');
-}
-
-async function confirmarAnulacionDesdeHistorial() {
-  if (!movimientoHistorialPendiente || !operacion) return;
-  const pin = document.getElementById('pinAnularHistorial').value.trim();
-  if (!pin) {
-    mostrarError('Ingresá el PIN administrador.');
-    return;
-  }
-  const boton = document.getElementById('btnConfirmarAnularHistorial');
-  boton.disabled = true;
-  boton.textContent = 'ANULANDO...';
-  try {
-    const resultado = await llamarWorker({
-      accion: 'anularMovimiento',
-      pin: pin,
-      idMovimiento: movimientoHistorialPendiente.idMovimiento,
-      usuarioAnulacion: operacion.usuario
-    });
-    if (!resultado || !resultado.ok) {
-      throw new Error(resultado && resultado.error ? resultado.error : 'No se pudo anular el descuento.');
-    }
-    const producto = movimientoHistorialPendiente.producto;
-    const cantidad = movimientoHistorialPendiente.cantidad;
-    cerrarModalAnularHistorial();
-    mostrarOk('✅ Se anuló ' + producto + ' - ' + cantidad + (cantidad === 1 ? ' packing.' : ' packings.') + ' El stock fue devuelto correctamente.');
-    cargarHistorialDescuentos();
-  } catch (error) {
-    mostrarError(obtenerMensajeError(error));
-  } finally {
-    boton.disabled = false;
-    boton.textContent = 'ANULAR DESCUENTO';
-  }
-}
-
-function reiniciarHistorialDescuentos() {
-  historialAbierto = false;
-  movimientoHistorialPendiente = null;
-  const contenedor = document.getElementById('contenedorHistorialDescuentos');
-  const boton = document.getElementById('btnHistorialDescuentos');
-  const lista = document.getElementById('listaHistorialDescuentos');
-  if (contenedor) contenedor.classList.add('oculto');
-  if (boton) boton.textContent = '↶ VER HISTORIAL DE DESCUENTOS';
-  if (lista) lista.innerHTML = '';
 }
 
 
 /*******************************************************
- * AJUSTES FORZADOS DE STOCK
+ * FORMULARIO - BUSCAR CAJA
  *******************************************************/
 
-function abrirAjusteForzado(tipo) {
+function abrirBuscarCaja() {
 
-  ocultarMensaje();
+  const html =
+    HtmlService
+      .createHtmlOutput(
 
-  tipoAjusteForzado =
-    tipo;
+        '<!DOCTYPE html>' +
 
-  cajaAjusteActual =
-    null;
+        '<html><head><base target="_top">' +
+
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+
+        '<style>' +
+
+        'body{font-family:Arial,sans-serif;padding:18px;color:#202124}' +
+
+        'input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px}' +
+
+        'button{width:100%;padding:12px;margin-top:12px;border:0;border-radius:8px;background:#1a73e8;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}' +
+
+        '#r{margin-top:16px;padding:12px;border-radius:8px;background:#f8f9fa;display:none;line-height:1.55}' +
+
+        '</style></head><body>' +
+
+        '<h2>🔎 Buscar caja</h2>' +
+
+        '<input id="codigo" placeholder="Ej: CJ-000001">' +
+
+        '<button onclick="buscar()">BUSCAR</button>' +
+
+        '<div id="r"></div>' +
+
+        '<script>' +
+
+        'function buscar(){' +
+
+        'var c=document.getElementById("codigo").value.trim();' +
+
+        'if(!c){return;}' +
+
+        'google.script.run.withSuccessHandler(function(x){' +
+
+        'var r=document.getElementById("r");' +
+
+        'r.style.display="block";' +
+
+        'if(!x){' +
+        'r.textContent="No se encontró la caja.";' +
+        'return;' +
+        '}' +
+
+        'r.innerHTML="<b>"+x.codigoCaja+"</b><br>Producto: <b>"+x.producto+"</b><br>Stock actual: <b>"+x.cantidadActual+"</b><br>Estado: <b>"+x.estado+"</b><br>QR: "+x.qr;' +
+
+        '}).withFailureHandler(function(e){' +
+
+        'var r=document.getElementById("r");' +
+
+        'r.style.display="block";' +
+
+        'r.textContent="⚠️ "+e.message;' +
+
+        '}).buscarCajaAdmin(c);' +
+
+        '}' +
+
+        '</script></body></html>'
+
+      )
+
+      .setWidth(430)
+      .setHeight(430);
 
 
-  const panel =
-    document.getElementById(
-      'panelAjusteForzado'
+  SpreadsheetApp
+    .getUi()
+    .showModalDialog(
+      html,
+      'Buscar caja'
     );
-
-
-  panel.classList.remove(
-    'oculto'
-  );
-
-
-  document
-    .getElementById(
-      'cajaAjusteInfo'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'codigoAjusteManual'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'cantidadAjuste'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'motivoAjuste'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'previaAjuste'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  const titulo =
-    document.getElementById(
-      'tituloAjusteForzado'
-    );
-
-
-  const boton =
-    document.getElementById(
-      'btnConfirmarAjuste'
-    );
-
-
-  if (
-    tipo ===
-    'AGREGAR'
-  ) {
-
-    titulo.textContent =
-      '🟢 Agregado forzado';
-
-    boton.textContent =
-      'CONFIRMAR AGREGADO';
-
-    boton.className =
-      'verde';
-
-  } else {
-
-    titulo.textContent =
-      '🔴 Bajar stock forzado';
-
-    boton.textContent =
-      'CONFIRMAR BAJA DE STOCK';
-
-    boton.className =
-      'rojo';
-
-  }
-
-
-  panel.scrollIntoView({
-    behavior:
-      'smooth',
-    block:
-      'start'
-  });
 
 }
 
 
-function buscarCajaAjusteManual() {
+/*******************************************************
+ * BUSCAR CAJA - ADMIN
+ *******************************************************/
+
+function buscarCajaAdmin(valor) {
 
   const codigo =
-    document
-      .getElementById(
-        'codigoAjusteManual'
-      )
-      .value
-      .trim();
+    normalizarCodigoQR_(
+      valor
+    );
 
 
   if (!codigo) {
 
-    mostrarError(
-      'Ingresá el código de la caja.'
+    throw new Error(
+      'Código de caja inválido. Usá el formato CJ-000001.'
     );
+
+  }
+
+
+  const ss =
+    obtenerSpreadsheet_();
+
+
+  const hoja =
+    ss.getSheetByName(
+      CONFIG.HOJA_CAJAS
+    );
+
+
+  if (!hoja) {
+
+    throw new Error(
+      'No existe la hoja CAJAS.'
+    );
+
+  }
+
+
+  const caja =
+    obtenerCajaPorCodigo_(
+      hoja,
+      codigo
+    );
+
+
+  if (!caja) {
+
+    return null;
+
+  }
+
+
+  const qr =
+    hoja
+      .getRange(
+        caja.fila,
+        3
+      )
+      .getDisplayValue();
+
+
+  const fecha =
+    hoja
+      .getRange(
+        caja.fila,
+        9
+      )
+      .getValue();
+
+
+  return {
+
+    idCaja:
+      caja.idCaja,
+
+    codigoCaja:
+      caja.codigoCaja,
+
+    qr:
+      qr,
+
+    idProducto:
+      caja.idProducto,
+
+    producto:
+      caja.producto,
+
+    cantidadInicial:
+      caja.cantidadInicial,
+
+    cantidadActual:
+      caja.cantidadActual,
+
+    estado:
+      caja.estado,
+
+    fechaAlta:
+      formatearFechaSeguro_(
+        fecha
+      )
+
+  };
+
+}
+
+
+/*******************************************************
+ * FORMULARIO - CAMBIAR ESTADO
+ *******************************************************/
+
+function abrirCambiarEstadoCaja() {
+
+  const html =
+    HtmlService
+      .createHtmlOutput(
+
+        '<!DOCTYPE html>' +
+
+        '<html><head><base target="_top">' +
+
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+
+        '<style>' +
+
+        'body{font-family:Arial,sans-serif;padding:18px;color:#202124}' +
+
+        'label{display:block;font-weight:bold;margin:14px 0 6px}' +
+
+        'input,select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px;background:white}' +
+
+        'button{width:100%;padding:12px;margin-top:18px;border:0;border-radius:8px;background:#f29900;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}' +
+
+        '#m{margin-top:14px;padding:10px;border-radius:7px;display:none}' +
+
+        '</style></head><body>' +
+
+        '<h2>🔄 Cambiar estado</h2>' +
+
+        '<label>Código de caja</label>' +
+
+        '<input id="codigo" placeholder="Ej: CJ-000001">' +
+
+        '<label>Nuevo estado</label>' +
+
+        '<select id="estado">' +
+        '<option value="GUARDADA">GUARDADA</option>' +
+        '<option value="EN USO">EN USO</option>' +
+        '</select>' +
+
+        '<button onclick="cambiar()">CAMBIAR ESTADO</button>' +
+
+        '<div id="m"></div>' +
+
+        '<script>' +
+
+        'function cambiar(){' +
+
+        'var c=document.getElementById("codigo").value.trim();' +
+
+        'var e=document.getElementById("estado").value;' +
+
+        'var m=document.getElementById("m");' +
+
+        'if(!c){' +
+        'm.style.display="block";' +
+        'm.textContent="Ingresá un código.";' +
+        'return;' +
+        '}' +
+
+        'google.script.run.withSuccessHandler(function(r){' +
+
+        'm.style.display="block";' +
+
+        'm.style.background="#e6f4ea";' +
+
+        'm.style.color="#137333";' +
+
+        'm.textContent="✅ "+r.codigoCaja+" ahora está "+r.estado+".";' +
+
+        '}).withFailureHandler(function(x){' +
+
+        'm.style.display="block";' +
+
+        'm.style.background="#fce8e6";' +
+
+        'm.style.color="#a50e0e";' +
+
+        'm.textContent="⚠️ "+x.message;' +
+
+        '}).cambiarEstadoCajaAdmin({' +
+        'codigo:c,' +
+        'estado:e' +
+        '});' +
+
+        '}' +
+
+        '</script></body></html>'
+
+      )
+
+      .setWidth(430)
+      .setHeight(380);
+
+
+  SpreadsheetApp
+    .getUi()
+    .showModalDialog(
+      html,
+      'Cambiar estado de caja'
+    );
+
+}
+
+
+/*******************************************************
+ * CAMBIAR ESTADO CAJA
+ *******************************************************/
+
+function cambiarEstadoCajaAdmin(datos) {
+
+  if (!datos) {
+
+    throw new Error(
+      'No se recibieron datos.'
+    );
+
+  }
+
+
+  const codigo =
+    normalizarCodigoQR_(
+      datos.codigo
+    );
+
+
+  const estado =
+    String(
+      datos.estado || ''
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (!codigo) {
+
+    throw new Error(
+      'Código de caja inválido.'
+    );
+
+  }
+
+
+  if (
+    ['GUARDADA', 'EN USO']
+      .indexOf(estado) === -1
+  ) {
+
+    throw new Error(
+      'Estado inválido.'
+    );
+
+  }
+
+
+  const lock =
+    LockService.getScriptLock();
+
+
+  lock.waitLock(
+    10000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hoja =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    if (!hoja) {
+
+      throw new Error(
+        'No existe la hoja CAJAS.'
+      );
+
+    }
+
+
+    const caja =
+      obtenerCajaPorCodigo_(
+        hoja,
+        codigo
+      );
+
+
+    if (!caja) {
+
+      throw new Error(
+        'No se encontró la caja ' +
+        codigo +
+        '.'
+      );
+
+    }
+
+
+    hoja
+      .getRange(
+        caja.fila,
+        8
+      )
+      .setValue(
+        estado
+      );
+
+
+    SpreadsheetApp.flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      codigoCaja:
+        codigo,
+
+      producto:
+        caja.producto,
+
+      estado:
+        estado
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * GENERAR / ACTUALIZAR QR DE CAJAS
+ *******************************************************/
+
+function generarQR() {
+
+  const ss =
+    obtenerSpreadsheet_();
+
+  const hojaCajas =
+    ss.getSheetByName(
+      CONFIG.HOJA_CAJAS
+    );
+
+  const hojaQR =
+    ss.getSheetByName(
+      CONFIG.HOJA_QR
+    );
+
+
+  if (!hojaCajas) {
+
+    throw new Error(
+      'No existe la hoja CAJAS.'
+    );
+
+  }
+
+
+  if (!hojaQR) {
+
+    throw new Error(
+      'No existe la hoja QR_CAJAS.'
+    );
+
+  }
+
+
+  /*****************************************************
+   * LIMPIAR QR ANTERIORES
+   * Conservamos el título de la fila 1
+   *****************************************************/
+
+  const ultimaFilaQR =
+    hojaQR.getMaxRows();
+
+
+  if (
+    ultimaFilaQR >= 2
+  ) {
+
+    hojaQR
+      .getRange(
+        2,
+        1,
+        ultimaFilaQR - 1,
+        4
+      )
+      .clearContent();
+
+  }
+
+
+  /*****************************************************
+   * ENCABEZADOS
+   *****************************************************/
+
+  hojaQR
+    .getRange(
+      2,
+      1,
+      1,
+      4
+    )
+    .setValues([[
+      'CODIGO CAJA',
+      'PRODUCTO',
+      'ESTADO',
+      'QR'
+    ]]);
+
+
+  hojaQR
+    .getRange(
+      2,
+      1,
+      1,
+      4
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  /*****************************************************
+   * LEER CAJAS
+   *****************************************************/
+
+  const ultimaFila =
+    hojaCajas.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    SpreadsheetApp
+      .getUi()
+      .alert(
+        'No hay cajas cargadas.'
+      );
 
     return;
 
   }
 
 
-  consultarCajaAjuste(
-    codigo
-  );
+  const datos =
+    hojaCajas
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        9
+      )
+      .getValues();
 
-}
+
+  let filaDestino =
+    3;
 
 
-function consultarCajaAjuste(
-  codigo
-) {
+  datos.forEach(
+    function(fila) {
 
-  llamarApiJsonp(
+      const codigo =
+        String(
+          fila[1] || ''
+        )
+          .trim()
+          .toUpperCase();
 
-    {
-      accion:
-        'consultarCaja',
 
-      codigo:
-        codigo
-    },
+      const producto =
+        String(
+          fila[4] || ''
+        )
+          .trim();
 
-    function(datos) {
 
-      if (
-        !datos ||
-        !datos.ok ||
-        !datos.caja
-      ) {
+      const estado =
+        String(
+          fila[7] || ''
+        )
+          .trim()
+          .toUpperCase();
 
-        mostrarError(
-          datos &&
-          datos.error
-            ? datos.error
-            : 'No se encontró la caja.'
-        );
+
+      if (!codigo) {
 
         return;
 
       }
 
 
-      cajaAjusteActual =
-        datos.caja;
+      /*************************************************
+       * CONTENIDO QUE LEERÁ LA APP
+       *************************************************/
+
+      const contenidoQR =
+        'STOCK-BSF|' +
+        codigo;
 
 
-      document
-        .getElementById(
-          'productoAjuste'
+      /*************************************************
+       * ESCRIBIR DATOS
+       *************************************************/
+
+      hojaQR
+        .getRange(
+          filaDestino,
+          1
         )
-        .textContent =
-          cajaAjusteActual.producto;
-
-
-      document
-        .getElementById(
-          'codigoCajaAjuste'
-        )
-        .textContent =
-          cajaAjusteActual.codigoCaja;
-
-
-      document
-        .getElementById(
-          'stockActualAjuste'
-        )
-        .textContent =
-          cajaAjusteActual.cantidadActual;
-
-
-      document
-        .getElementById(
-          'cajaAjusteInfo'
-        )
-        .classList
-        .remove(
-          'oculto'
+        .setValue(
+          codigo
         );
 
 
-      actualizarPreviaAjuste();
+      hojaQR
+        .getRange(
+          filaDestino,
+          2
+        )
+        .setValue(
+          producto
+        );
 
-    },
 
-    function(error) {
+      hojaQR
+        .getRange(
+          filaDestino,
+          3
+        )
+        .setValue(
+          estado
+        );
 
-      mostrarError(
-        error
-      );
+
+      /*************************************************
+       * GENERAR QR
+       *************************************************/
+
+      const urlQR =
+        'https://quickchart.io/qr?text=' +
+        encodeURIComponent(
+          contenidoQR
+        ) +
+        '&size=300';
+
+
+      hojaQR
+        .getRange(
+          filaDestino,
+          4
+        )
+        .setFormula(
+          '=IMAGE("' +
+          urlQR +
+          '";4;150;150)'
+        );
+
+
+      /*************************************************
+       * FORMATO
+       *************************************************/
+
+      hojaQR
+        .getRange(
+          filaDestino,
+          1,
+          1,
+          4
+        )
+        .setHorizontalAlignment(
+          'center'
+        )
+        .setVerticalAlignment(
+          'middle'
+        );
+
+
+      hojaQR
+        .getRange(
+          filaDestino,
+          1
+        )
+        .setFontWeight(
+          'bold'
+        );
+
+
+      hojaQR
+        .getRange(
+          filaDestino,
+          2
+        )
+        .setFontWeight(
+          'bold'
+        );
+
+
+      hojaQR
+        .setRowHeight(
+          filaDestino,
+          165
+        );
+
+
+      filaDestino++;
 
     }
+  );
 
+
+  /*****************************************************
+   * ANCHOS
+   *****************************************************/
+
+  hojaQR.setColumnWidth(
+    1,
+    140
+  );
+
+  hojaQR.setColumnWidth(
+    2,
+    250
+  );
+
+  hojaQR.setColumnWidth(
+    3,
+    130
+  );
+
+  hojaQR.setColumnWidth(
+    4,
+    175
+  );
+
+
+  SpreadsheetApp.flush();
+
+
+  SpreadsheetApp
+    .getUi()
+    .alert(
+      '✅ QR de cajas actualizados correctamente.'
+    );
+
+}
+
+
+/*******************************************************
+ * VERIFICAR ESTRUCTURA
+ *******************************************************/
+
+function verificarEstructura() {
+
+  const ss =
+    obtenerSpreadsheet_();
+
+
+  const errores =
+    [];
+
+
+  verificarEncabezadosAdmin_(
+    ss,
+    CONFIG.HOJA_PRODUCTOS,
+    [
+      'ID PRODUCTO',
+      'NOMBRE',
+      'CATEGORIA'
+    ],
+    errores
+  );
+
+
+  verificarEncabezadosAdmin_(
+    ss,
+    CONFIG.HOJA_CAJAS,
+    [
+      'ID CAJA',
+      'CODIGO CAJA',
+      'QR',
+      'ID PRODUCTO',
+      'PRODUCTO',
+      'CANTIDAD INICIAL',
+      'CANTIDAD ACTUAL',
+      'ESTADO',
+      'FECHA ALTA'
+    ],
+    errores
+  );
+
+
+  verificarEncabezadosAdmin_(
+    ss,
+    CONFIG.HOJA_PEDIDOS,
+    [
+      'ID OPERACION',
+      'FECHA',
+      'PEDIDO',
+      'CLIENTE',
+      'USUARIO',
+      'ESTADO'
+    ],
+    errores
+  );
+
+
+  verificarEncabezadosAdmin_(
+    ss,
+    CONFIG.HOJA_MOVIMIENTOS,
+    [
+      'ID MOVIMIENTO',
+      'ID OPERACION',
+      'FECHA',
+      'PEDIDO',
+      'CLIENTE',
+      'ID CAJA',
+      'CODIGO CAJA',
+      'ID PRODUCTO',
+      'PRODUCTO',
+      'CANTIDAD ANTES',
+      'CANTIDAD DESCONTADA',
+      'CANTIDAD DESPUES',
+      'USUARIO',
+      'ESTADO',
+      'FECHA ANULACION',
+      'USUARIO ANULACION'
+    ],
+    errores
+  );
+
+
+  if (
+    errores.length
+  ) {
+
+    SpreadsheetApp
+      .getUi()
+      .alert(
+        '⚠️ Se encontraron problemas:\n\n' +
+        errores.join('\n')
+      );
+
+
+    return {
+
+      ok:
+        false,
+
+      errores:
+        errores
+
+    };
+
+  }
+
+
+  SpreadsheetApp
+    .getUi()
+    .alert(
+      '✅ Estructura correcta. PRODUCTOS, CAJAS, PEDIDOS y MOVIMIENTOS están listos.'
+    );
+
+
+  return {
+
+    ok:
+      true,
+
+    errores:
+      []
+
+  };
+
+}
+
+
+/*******************************************************
+ * VERIFICAR ENCABEZADOS
+ *******************************************************/
+
+function verificarEncabezadosAdmin_(
+  ss,
+  nombreHoja,
+  esperados,
+  errores
+) {
+
+  const hoja =
+    ss.getSheetByName(
+      nombreHoja
+    );
+
+
+  if (!hoja) {
+
+    errores.push(
+      'No existe la hoja ' +
+      nombreHoja +
+      '.'
+    );
+
+    return;
+
+  }
+
+
+  const encabezados =
+    hoja
+      .getRange(
+        1,
+        1,
+        1,
+        esperados.length
+      )
+      .getDisplayValues()[0];
+
+
+  esperados.forEach(
+    function(valor, i) {
+
+      const actual =
+        String(
+          encabezados[i] || ''
+        )
+          .trim()
+          .toUpperCase();
+
+
+      if (
+        actual !== valor
+      ) {
+
+        errores.push(
+
+          nombreHoja +
+          ': columna ' +
+          (i + 1) +
+          ' debe ser "' +
+          valor +
+          '" y actualmente es "' +
+          String(
+            encabezados[i] || ''
+          ) +
+          '".'
+
+        );
+
+      }
+
+    }
   );
 
 }
 
 
-function actualizarPreviaAjuste() {
-
-  if (
-    !cajaAjusteActual ||
-    !tipoAjusteForzado
-  ) {
-    return;
-  }
-
-
-  const cantidad =
-    Number(
-      document
-        .getElementById(
-          'cantidadAjuste'
-        )
-        .value
-    );
-
-
-  const previa =
-    document.getElementById(
-      'previaAjuste'
-    );
-
-
-  if (
-    !Number.isInteger(cantidad) ||
-    cantidad <= 0
-  ) {
-
-    previa.classList.add(
-      'oculto'
-    );
-
-    return;
-
-  }
-
-
-  const actual =
-    Number(
-      cajaAjusteActual.cantidadActual
-    );
-
-
-  const despues =
-    tipoAjusteForzado ===
-      'AGREGAR'
-      ? actual + cantidad
-      : actual - cantidad;
-
-
-  previa.classList.remove(
-    'oculto'
-  );
-
-
-  if (
-    despues < 0
-  ) {
-
-    previa.textContent =
-      '⚠️ No permitido: el stock quedaría en ' +
-      despues +
-      '.';
-
-    return;
-
-  }
-
-
-  previa.textContent =
-    'Stock: ' +
-    actual +
-    (
-      tipoAjusteForzado === 'AGREGAR'
-        ? ' + '
-        : ' - '
-    ) +
-    cantidad +
-    ' = ' +
-    despues;
-
-}
-
-
-async function confirmarAjusteForzado() {
-
-  if (
-    !cajaAjusteActual ||
-    !tipoAjusteForzado
-  ) {
-
-    mostrarError(
-      'Primero escaneá o buscá una caja.'
-    );
-
-    return;
-
-  }
-
-
-  const pin =
-    document
-      .getElementById(
-        'pinAdmin'
-      )
-      .value
-      .trim();
-
-
-  const usuario =
-    document
-      .getElementById(
-        'usuarioAnulacion'
-      )
-      .value
-      .trim();
-
-
-  const cantidad =
-    Number(
-      document
-        .getElementById(
-          'cantidadAjuste'
-        )
-        .value
-    );
-
-
-  const motivo =
-    document
-      .getElementById(
-        'motivoAjuste'
-      )
-      .value
-      .trim();
-
-
-  if (
-    !pin ||
-    !usuario
-  ) {
-
-    mostrarError(
-      'Completá PIN administrador y usuario.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !Number.isInteger(cantidad) ||
-    cantidad <= 0
-  ) {
-
-    mostrarError(
-      'Ingresá una cantidad válida.'
-    );
-
-    return;
-
-  }
-
-
-  if (!motivo) {
-
-    mostrarError(
-      'Ingresá el motivo del ajuste.'
-    );
-
-    return;
-
-  }
-
-
-  const stockActual =
-    Number(
-      cajaAjusteActual.cantidadActual
-    );
-
-
-  const stockDespues =
-    tipoAjusteForzado ===
-      'AGREGAR'
-      ? stockActual + cantidad
-      : stockActual - cantidad;
-
-
-  if (
-    stockDespues < 0
-  ) {
-
-    mostrarError(
-      'No se puede dejar el stock en negativo.'
-    );
-
-    return;
-
-  }
-
-
-  const textoAccion =
-    tipoAjusteForzado ===
-      'AGREGAR'
-      ? 'AGREGAR'
-      : 'BAJAR';
-
-
-  const confirmar =
-    window.confirm(
-      textoAccion +
-      ' ' +
-      cantidad +
-      ' packings en ' +
-      cajaAjusteActual.producto +
-      ' (' +
-      cajaAjusteActual.codigoCaja +
-      ')?\n\n' +
-      'Stock actual: ' +
-      stockActual +
-      '\n' +
-      'Stock resultante: ' +
-      stockDespues +
-      '\n\n' +
-      'Motivo: ' +
-      motivo
-    );
-
-
-  if (!confirmar) {
-    return;
-  }
-
-
-  if (
-    tipoAjusteForzado ===
-    'BAJAR'
-  ) {
-
-    const confirmarBaja =
-      window.confirm(
-        'CONFIRMACIÓN FINAL\n\n' +
-        'Se bajará stock manualmente.\n' +
-        '¿Continuar?'
-      );
-
-
-    if (!confirmarBaja) {
-      return;
-    }
-
-  }
-
-
-  const boton =
-    document.getElementById(
-      'btnConfirmarAjuste'
-    );
-
-
-  boton.disabled =
-    true;
-
-  boton.textContent =
-    'PROCESANDO...';
-
+/*******************************************************
+ * PROBAR CONEXION DESDE MENU
+ *******************************************************/
+
+function probarConexionDesdeMenu() {
 
   try {
 
     const resultado =
-      await llamarWorker({
+      probarConexion();
 
-        accion:
-          'ajustarStockForzado',
 
-        pin:
-          pin,
-
-        codigoCaja:
-          cajaAjusteActual.codigoCaja,
-
-        cantidad:
-          cantidad,
-
-        tipo:
-          tipoAjusteForzado,
-
-        motivo:
-          motivo,
-
-        usuario:
-          usuario
-
-      });
-
-
-    if (
-      !resultado ||
-      !resultado.ok
-    ) {
-
-      throw new Error(
-        resultado &&
-        resultado.error
-          ? resultado.error
-          : 'No se pudo realizar el ajuste.'
-      );
-
-    }
-
-
-    cajaAjusteActual.cantidadActual =
-      resultado.stockDespues;
-
-
-    document
-      .getElementById(
-        'stockActualAjuste'
-      )
-      .textContent =
-        resultado.stockDespues;
-
-
-    document
-      .getElementById(
-        'cantidadAjuste'
-      )
-      .value =
-        '';
-
-
-    document
-      .getElementById(
-        'motivoAjuste'
-      )
-      .value =
-        '';
-
-
-    document
-      .getElementById(
-        'previaAjuste'
-      )
-      .classList
-      .add(
-        'oculto'
-      );
-
-
-    mostrarOk(
-      '✅ Ajuste ' +
-      resultado.idAjuste +
-      ' realizado. ' +
-      resultado.producto +
-      ': ' +
-      resultado.stockAntes +
-      ' → ' +
-      resultado.stockDespues +
-      '.'
-    );
-
-
-  } catch (error) {
-
-    mostrarError(
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  } finally {
-
-    boton.disabled =
-      false;
-
-
-    if (
-      tipoAjusteForzado ===
-      'AGREGAR'
-    ) {
-
-      boton.textContent =
-        'CONFIRMAR AGREGADO';
-
-    } else {
-
-      boton.textContent =
-        'CONFIRMAR BAJA DE STOCK';
-
-    }
-
-  }
-
-}
-
-
-/*******************************************************
- * SCANNER PARA AJUSTES FORZADOS
- *******************************************************/
-
-async function abrirScannerAjuste() {
-
-  ocultarMensaje();
-
-
-  if (
-    scannerAjusteActivo
-  ) {
-    return;
-  }
-
-
-  try {
-
-    lectorAjuste =
-      new Html5Qrcode(
-        'readerAjuste'
-      );
-
-
-    await lectorAjuste.start(
-
-      {
-        facingMode:
-          'environment'
-      },
-
-      {
-        fps:
-          10,
-
-        qrbox:
-          function(
-            width,
-            height
-          ) {
-
-            const minimo =
-              Math.min(
-                width,
-                height
-              );
-
-
-            const tamano =
-              Math.floor(
-                minimo * 0.70
-              );
-
-
-            return {
-              width:
-                tamano,
-              height:
-                tamano
-            };
-
-          }
-      },
-
-      function(decodedText) {
-
-        if (
-          !scannerAjusteActivo
-        ) {
-          return;
-        }
-
-
-        scannerAjusteActivo =
-          false;
-
-
-        cerrarScannerAjuste()
-          .then(
-            function() {
-
-              consultarCajaAjuste(
-                decodedText
-              );
-
-            }
-          );
-
-      },
-
-      function() {}
-
-    );
-
-
-    scannerAjusteActivo =
-      true;
-
-
-    document
-      .getElementById(
-        'btnScannerAjuste'
-      )
-      .disabled =
-        true;
-
-
-    document
-      .getElementById(
-        'btnCerrarScannerAjuste'
-      )
-      .classList
-      .remove(
-        'oculto'
+    SpreadsheetApp
+      .getUi()
+      .alert(
+        '✅ ' +
+        resultado
       );
 
 
   } catch (error) {
 
-    scannerAjusteActivo =
-      false;
-
-
-    mostrarError(
-      'No se pudo abrir la cámara: ' +
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  }
-
-}
-
-
-async function cerrarScannerAjuste() {
-
-  scannerAjusteActivo =
-    false;
-
-
-  if (
-    lectorAjuste
-  ) {
-
-    try {
-
-      if (
-        lectorAjuste.isScanning
-      ) {
-        await lectorAjuste.stop();
-      }
-
-    } catch (error) {}
-
-
-    try {
-      lectorAjuste.clear();
-    } catch (error) {}
-
-  }
-
-
-  lectorAjuste =
-    null;
-
-
-  const reader =
-    document.getElementById(
-      'readerAjuste'
-    );
-
-
-  if (reader) {
-    reader.innerHTML = '';
-  }
-
-
-  const boton =
-    document.getElementById(
-      'btnScannerAjuste'
-    );
-
-
-  if (boton) {
-    boton.disabled = false;
-  }
-
-
-  const cerrar =
-    document.getElementById(
-      'btnCerrarScannerAjuste'
-    );
-
-
-  if (cerrar) {
-    cerrar.classList.add(
-      'oculto'
-    );
-  }
-
-}
-
-
-/*******************************************************
- * RESULTADO ADMIN
- *******************************************************/
-
-function mostrarResultadoAdmin(
-  texto
-) {
-
-  const elemento =
-    document.getElementById(
-      'resultadoAdmin'
-    );
-
-
-  elemento.textContent =
-    texto;
-
-
-  elemento.classList.remove(
-    'oculto'
-  );
-
-
-  mostrarOk(
-    '✅ Operación administrativa realizada correctamente.'
-  );
-
-}
-
-
-/*******************************************************
- * MODAL
- *******************************************************/
-
-function cerrarModalDescuento() {
-
-  document
-    .getElementById(
-      'modalDescuento'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-}
-
-
-/*******************************************************
- * LIMPIAR CAJA
- *******************************************************/
-
-function cambiarCaja() {
-
-  limpiarCaja();
-
-}
-
-
-function limpiarCaja() {
-
-  cajaActual =
-    null;
-
-
-  cantidadPendiente =
-    0;
-
-
-  document
-    .getElementById(
-      'tarjetaCaja'
-    )
-    .classList
-    .add(
-      'oculto'
-    );
-
-
-  document
-    .getElementById(
-      'cantidadDescontar'
-    )
-    .value =
-      '';
-
-}
-
-
-/*******************************************************
- * SCANNER
- *******************************************************/
-
-async function abrirScanner() {
-
-  ocultarMensaje();
-
-
-  if (
-    scannerActivo
-  ) {
-
-    return;
-
-  }
-
-
-  try {
-
-    lector =
-      new Html5Qrcode(
-        'reader'
+    SpreadsheetApp
+      .getUi()
+      .alert(
+        '⚠️ ' +
+        obtenerMensajeError_(
+          error
+        )
       );
-
-
-    await lector.start(
-
-      {
-        facingMode:
-          'environment'
-      },
-
-      {
-
-        fps:
-          10,
-
-        qrbox:
-          function(
-            width,
-            height
-          ) {
-
-            const minimo =
-              Math.min(
-                width,
-                height
-              );
-
-
-            const tamano =
-              Math.floor(
-                minimo *
-                0.70
-              );
-
-
-            return {
-
-              width:
-                tamano,
-
-              height:
-                tamano
-
-            };
-
-          }
-
-      },
-
-      function(
-        decodedText
-      ) {
-
-        if (
-          !scannerActivo
-        ) {
-
-          return;
-
-        }
-
-
-        scannerActivo =
-          false;
-
-
-        cerrarScanner()
-          .then(
-            function() {
-
-              consultarCaja(
-                decodedText
-              );
-
-            }
-          );
-
-      },
-
-      function() {}
-
-    );
-
-
-    scannerActivo =
-      true;
-
-
-    document
-      .getElementById(
-        'btnScanner'
-      )
-      .disabled =
-        true;
-
-
-    document
-      .getElementById(
-        'btnCerrarScanner'
-      )
-      .classList
-      .remove(
-        'oculto'
-      );
-
-
-  } catch (error) {
-
-    scannerActivo =
-      false;
-
-
-    mostrarError(
-      'No se pudo abrir la cámara: ' +
-      obtenerMensajeError(
-        error
-      )
-    );
-
-  }
-
-}
-
-
-async function cerrarScanner() {
-
-  scannerActivo =
-    false;
-
-
-  if (lector) {
-
-    try {
-
-      if (
-        lector.isScanning
-      ) {
-
-        await lector.stop();
-
-      }
-
-    } catch (error) {}
-
-
-    try {
-
-      lector.clear();
-
-    } catch (error) {}
-
-  }
-
-
-  lector =
-    null;
-
-
-  const reader =
-    document.getElementById(
-      'reader'
-    );
-
-
-  if (reader) {
-
-    reader.innerHTML =
-      '';
-
-  }
-
-
-  const btnScanner =
-    document.getElementById(
-      'btnScanner'
-    );
-
-
-  if (btnScanner) {
-
-    btnScanner.disabled =
-      false;
-
-  }
-
-
-  const btnCerrar =
-    document.getElementById(
-      'btnCerrarScanner'
-    );
-
-
-  if (btnCerrar) {
-
-    btnCerrar.classList.add(
-      'oculto'
-    );
 
   }
 
@@ -4776,214 +1705,10 @@ async function cerrarScanner() {
 
 
 /*******************************************************
- * JSONP
+ * ESCAPAR HTML - ADMIN
  *******************************************************/
 
-function llamarApiJsonp(
-  parametros,
-  exito,
-  fallo
-) {
-
-  const callback =
-    'bsfCallback_' +
-    Date.now() +
-    '_' +
-    Math.floor(
-      Math.random() *
-      100000
-    );
-
-
-  const script =
-    document.createElement(
-      'script'
-    );
-
-
-  let terminado =
-    false;
-
-
-  let timeout =
-    null;
-
-
-  window[
-    callback
-  ] =
-    function(datos) {
-
-      if (
-        terminado
-      ) {
-
-        return;
-
-      }
-
-
-      terminado =
-        true;
-
-
-      clearTimeout(
-        timeout
-      );
-
-
-      limpiarJsonp(
-        script,
-        callback
-      );
-
-
-      exito(
-        datos
-      );
-
-    };
-
-
-  script.onerror =
-    function() {
-
-      if (
-        terminado
-      ) {
-
-        return;
-
-      }
-
-
-      terminado =
-        true;
-
-
-      clearTimeout(
-        timeout
-      );
-
-
-      limpiarJsonp(
-        script,
-        callback
-      );
-
-
-      fallo(
-        'No se pudo consultar Apps Script.'
-      );
-
-    };
-
-
-  const query =
-    new URLSearchParams();
-
-
-  Object.keys(
-    parametros
-  )
-    .forEach(
-      function(clave) {
-
-        query.set(
-          clave,
-          parametros[clave]
-        );
-
-      }
-    );
-
-
-  query.set(
-    'callback',
-    callback
-  );
-
-
-  query.set(
-    '_',
-    Date.now()
-  );
-
-
-  script.src =
-    URL_APPS_SCRIPT +
-    '?' +
-    query.toString();
-
-
-  document.body
-    .appendChild(
-      script
-    );
-
-
-  timeout =
-    setTimeout(
-      function() {
-
-        if (
-          terminado
-        ) {
-
-          return;
-
-        }
-
-
-        terminado =
-          true;
-
-
-        limpiarJsonp(
-          script,
-          callback
-        );
-
-
-        fallo(
-          'La consulta tardó demasiado.'
-        );
-
-      },
-      15000
-    );
-
-}
-
-
-function limpiarJsonp(
-  script,
-  callback
-) {
-
-  try {
-
-    script.remove();
-
-  } catch (error) {}
-
-
-  try {
-
-    delete window[
-      callback
-    ];
-
-  } catch (error) {}
-
-}
-
-
-/*******************************************************
- * ESCAPAR HTML
- *******************************************************/
-
-function escaparHtml(
+function escaparHtmlAdmin_(
   valor
 ) {
 
@@ -5015,78 +1740,3323 @@ function escaparHtml(
     );
 
 }
+/*******************************************************
+ * CONFIGURACION PIN PRODUCCION
+ *
+ * Si ya configuraste tu PIN anteriormente,
+ * NO hace falta volver a ejecutar esta función.
+ *******************************************************/
+
+function configurarPinInicial() {
+
+  const PIN_INICIAL =
+    '1234';
+
+
+  PropertiesService
+    .getScriptProperties()
+    .setProperty(
+      CONFIG.PROP_PIN,
+      PIN_INICIAL
+    );
+
+
+  Logger.log(
+    'PIN de producción configurado correctamente.'
+  );
+
+}
 
 
 /*******************************************************
- * MENSAJES
+ * CONFIGURACION PIN ADMINISTRADOR
+ *
+ * PIN ADMIN: 1824
+ *
+ * Solo es necesario ejecutarla una vez.
  *******************************************************/
 
-function mostrarOk(
-  texto
-) {
+function configurarPinAdminInicial() {
 
-  const elemento =
-    document.getElementById(
-      'mensaje'
+  const PIN_ADMIN =
+    '1824';
+
+
+  PropertiesService
+    .getScriptProperties()
+    .setProperty(
+      CONFIG.PROP_ADMIN_PIN,
+      PIN_ADMIN
     );
 
 
-  elemento.className =
-    'mensaje mensaje-ok';
-
-
-  elemento.textContent =
-    texto;
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  Logger.log(
+    'PIN ADMIN configurado correctamente.'
+  );
 
 }
 
 
-function mostrarError(
-  texto
-) {
+/*******************************************************
+ * GET
+ *
+ * ACCIONES:
+ *
+ * ping
+ * consultarCaja
+ * consultarPedido
+ *******************************************************/
 
-  const elemento =
-    document.getElementById(
-      'mensaje'
-    );
+function doGet(e) {
 
-
-  elemento.className =
-    'mensaje mensaje-error';
-
-
-  elemento.textContent =
-    '⚠️ ' +
-    texto;
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-
-}
-
-
-function ocultarMensaje() {
-
-  document
-    .getElementById(
-      'mensaje'
+  const accion =
+    String(
+      (e &&
+       e.parameter &&
+       e.parameter.accion) ||
+      ''
     )
-    .className =
-      'oculto';
+      .trim()
+      .toLowerCase();
+
+
+  /*****************************************************
+   * PING
+   *****************************************************/
+
+  if (
+    accion ===
+    'ping'
+  ) {
+
+    return responderJsonp_(
+      e,
+      {
+
+        ok:
+          true,
+
+        mensaje:
+          'API BSF conectada',
+
+        fecha:
+          Utilities.formatDate(
+            new Date(),
+            Session.getScriptTimeZone(),
+            'dd/MM/yyyy HH:mm:ss'
+          )
+
+      }
+    );
+
+  }
+
+
+  /*****************************************************
+   * CONSULTAR CAJA
+   *****************************************************/
+
+  if (
+    accion ===
+    'consultarcaja'
+  ) {
+
+    try {
+
+      const codigo =
+        String(
+          (e &&
+           e.parameter &&
+           e.parameter.codigo) ||
+          ''
+        )
+          .trim();
+
+
+      const caja =
+        consultarCajaProduccion(
+          codigo
+        );
+
+
+      return responderJsonp_(
+        e,
+        {
+
+          ok:
+            true,
+
+          caja:
+            caja
+
+        }
+      );
+
+
+    } catch (error) {
+
+      return responderJsonp_(
+        e,
+        {
+
+          ok:
+            false,
+
+          error:
+            obtenerMensajeError_(
+              error
+            )
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /*****************************************************
+   * CONSULTAR PEDIDO
+   *****************************************************/
+
+  if (
+    accion ===
+    'consultarpedido'
+  ) {
+
+    try {
+
+      const pedido =
+        String(
+          (e &&
+           e.parameter &&
+           e.parameter.pedido) ||
+          ''
+        )
+          .trim();
+
+
+      const resultado =
+        consultarPedidoCompleto(
+          pedido
+        );
+
+
+      return responderJsonp_(
+        e,
+        {
+
+          ok:
+            true,
+
+          pedido:
+            resultado
+
+        }
+      );
+
+
+    } catch (error) {
+
+      return responderJsonp_(
+        e,
+        {
+
+          ok:
+            false,
+
+          error:
+            obtenerMensajeError_(
+              error
+            )
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /*****************************************************
+   * APERTURA NORMAL
+   *****************************************************/
+
+  return HtmlService
+    .createHtmlOutput(
+      '<h2>API STOCK INTERNO BSF</h2>' +
+      '<p>Servicio activo.</p>'
+    );
 
 }
 
 
-function obtenerMensajeError(
+/*******************************************************
+ * POST
+ *
+ * PRODUCCION + ADMIN
+ *******************************************************/
+
+function doPost(e) {
+
+  try {
+
+    const accion =
+      String(
+        (e &&
+         e.parameter &&
+         e.parameter.accion) ||
+        ''
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const pin =
+      String(
+        (e &&
+         e.parameter &&
+         e.parameter.pin) ||
+        ''
+      )
+        .trim();
+
+
+    let respuesta;
+
+
+    /***************************************************
+     * INICIAR PEDIDO
+     ***************************************************/
+
+    if (
+      accion ===
+      'iniciarpedido'
+    ) {
+
+      validarPin_(
+        pin
+      );
+
+
+      respuesta =
+        iniciarPedido({
+
+          pedido:
+            e.parameter.pedido,
+
+          cliente:
+            e.parameter.cliente,
+
+          usuario:
+            e.parameter.usuario
+
+        });
+
+    }
+
+
+    /***************************************************
+     * LISTAR PEDIDOS DE PRODUCCION (PIN OBLIGATORIO)
+     ***************************************************/
+    else if (accion === 'listarpedidosproduccion') {
+      validarPin_(pin);
+      respuesta = listarPedidosProduccion({
+        filtroUsuario: e.parameter.filtroUsuario
+      });
+    }
+
+    /***************************************************
+     * RETOMAR PEDIDO (PIN OBLIGATORIO)
+     ***************************************************/
+    else if (accion === 'retomarpedido') {
+      validarPin_(pin);
+      respuesta = retomarPedidoProduccion({
+        idOperacion: e.parameter.idOperacion,
+        usuario: e.parameter.usuario
+      });
+    }
+
+    /***************************************************
+     * DESCONTAR STOCK
+     ***************************************************/
+
+    else if (
+      accion ===
+      'descontar'
+    ) {
+
+      validarPin_(
+        pin
+      );
+
+
+      respuesta =
+        confirmarDescuento({
+
+          idOperacion:
+            e.parameter.idOperacion,
+
+          codigoCaja:
+            e.parameter.codigoCaja,
+
+          cantidad:
+            e.parameter.cantidad,
+
+          usuario:
+            e.parameter.usuario
+
+        });
+
+    }
+
+
+    /***************************************************
+     * FINALIZAR PEDIDO
+     ***************************************************/
+
+    else if (
+      accion ===
+      'finalizarpedido'
+    ) {
+
+      validarPin_(
+        pin
+      );
+
+
+      respuesta =
+        finalizarPedido(
+          e.parameter.idOperacion
+        );
+
+    }
+
+
+    /***************************************************
+     * ANULAR MOVIMIENTO
+     ***************************************************/
+
+    else if (
+      accion ===
+      'anularmovimiento'
+    ) {
+
+      validarPinAdmin_(
+        pin
+      );
+
+
+      respuesta =
+        anularMovimiento({
+
+          idMovimiento:
+            e.parameter.idMovimiento,
+
+          usuarioAnulacion:
+            e.parameter.usuarioAnulacion
+
+        });
+
+    }
+
+
+    /***************************************************
+     * ANULAR PEDIDO COMPLETO
+     ***************************************************/
+
+    else if (
+      accion ===
+      'anularpedidocompleto'
+    ) {
+
+      validarPinAdmin_(
+        pin
+      );
+
+
+      respuesta =
+        anularPedidoCompleto({
+
+          pedido:
+            e.parameter.pedido,
+
+          usuarioAnulacion:
+            e.parameter.usuarioAnulacion
+
+        });
+
+    }
+
+
+    /***************************************************
+     * AJUSTE FORZADO DE STOCK
+     ***************************************************/
+
+    else if (
+      accion ===
+      'ajustarstockforzado'
+    ) {
+
+      validarPinAdmin_(
+        pin
+      );
+
+
+      respuesta =
+        ajustarStockForzado({
+
+          codigoCaja:
+            e.parameter.codigoCaja,
+
+          cantidad:
+            e.parameter.cantidad,
+
+          tipo:
+            e.parameter.tipo,
+
+          motivo:
+            e.parameter.motivo,
+
+          usuario:
+            e.parameter.usuario
+
+        });
+
+    }
+
+
+    /***************************************************
+     * ACCION DESCONOCIDA
+     ***************************************************/
+
+    else {
+
+      throw new Error(
+        'Acción POST no válida.'
+      );
+
+    }
+
+
+    return responderJson_(
+      respuesta
+    );
+
+
+  } catch (error) {
+
+    return responderJson_({
+
+      ok:
+        false,
+
+      error:
+        obtenerMensajeError_(
+          error
+        )
+
+    });
+
+  }
+
+}
+
+
+/*******************************************************
+ * RESPUESTA JSON
+ *******************************************************/
+
+function responderJson_(
+  datos
+) {
+
+  return ContentService
+    .createTextOutput(
+      JSON.stringify(
+        datos
+      )
+    )
+    .setMimeType(
+      ContentService
+        .MimeType
+        .JSON
+    );
+
+}
+
+
+/*******************************************************
+ * RESPUESTA JSONP
+ *******************************************************/
+
+function responderJsonp_(
+  e,
+  datos
+) {
+
+  const callback =
+    String(
+      (e &&
+       e.parameter &&
+       e.parameter.callback) ||
+      ''
+    )
+      .trim();
+
+
+  if (!callback) {
+
+    return responderJson_(
+      datos
+    );
+
+  }
+
+
+  if (
+    !/^[A-Za-z_$][0-9A-Za-z_$\.]*$/
+      .test(
+        callback
+      )
+  ) {
+
+    return responderJson_({
+
+      ok:
+        false,
+
+      error:
+        'Callback inválido.'
+
+    });
+
+  }
+
+
+  return ContentService
+    .createTextOutput(
+
+      callback +
+      '(' +
+      JSON.stringify(
+        datos
+      ) +
+      ');'
+
+    )
+    .setMimeType(
+      ContentService
+        .MimeType
+        .JAVASCRIPT
+    );
+
+}
+
+
+/*******************************************************
+ * VALIDAR PIN PRODUCCION
+ *******************************************************/
+
+function validarPin_(
+  pin
+) {
+
+  const pinCorrecto =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty(
+        CONFIG.PROP_PIN
+      );
+
+
+  if (!pinCorrecto) {
+
+    throw new Error(
+      'El PIN de producción todavía no fue configurado.'
+    );
+
+  }
+
+
+  if (
+    String(pin) !==
+    String(pinCorrecto)
+  ) {
+
+    throw new Error(
+      'PIN incorrecto.'
+    );
+
+  }
+
+}
+
+
+/*******************************************************
+ * VALIDAR PIN ADMIN
+ *******************************************************/
+
+function validarPinAdmin_(
+  pin
+) {
+
+  const pinCorrecto =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty(
+        CONFIG.PROP_ADMIN_PIN
+      );
+
+
+  if (!pinCorrecto) {
+
+    throw new Error(
+      'El PIN de administrador todavía no fue configurado.'
+    );
+
+  }
+
+
+  if (
+    String(pin) !==
+    String(pinCorrecto)
+  ) {
+
+    throw new Error(
+      'PIN de administrador incorrecto.'
+    );
+
+  }
+
+}
+
+
+/*******************************************************
+ * GOOGLE SHEETS
+ *******************************************************/
+
+function obtenerSpreadsheet_() {
+
+  return SpreadsheetApp
+    .openById(
+      CONFIG.SPREADSHEET_ID
+    );
+
+}
+
+
+/*******************************************************
+ * PRUEBA DE CONEXION
+ *******************************************************/
+
+function probarConexion() {
+
+  const ss =
+    obtenerSpreadsheet_();
+
+
+  const faltantes =
+    [];
+
+
+  [
+    CONFIG.HOJA_CAJAS,
+    CONFIG.HOJA_PEDIDOS,
+    CONFIG.HOJA_MOVIMIENTOS
+  ]
+  .forEach(
+    function(nombre) {
+
+      if (
+        !ss.getSheetByName(
+          nombre
+        )
+      ) {
+
+        faltantes.push(
+          nombre
+        );
+
+      }
+
+    }
+  );
+
+
+  if (
+    faltantes.length
+  ) {
+
+    throw new Error(
+      'No se encontraron las hojas: ' +
+      faltantes.join(', ')
+    );
+
+  }
+
+
+  return (
+    'CONEXIÓN OK - ' +
+    ss.getName()
+  );
+
+}
+
+
+/*******************************************************
+ * INICIAR PEDIDO
+ *******************************************************/
+
+function iniciarPedido(
+  datos
+) {
+
+  if (!datos) {
+
+    throw new Error(
+      'No se recibieron datos.'
+    );
+
+  }
+
+
+  const pedido =
+    String(
+      datos.pedido || ''
+    )
+      .trim();
+
+
+  const cliente =
+    String(
+      datos.cliente || ''
+    )
+      .trim();
+
+
+  const usuario =
+    String(
+      datos.usuario || ''
+    )
+      .trim();
+
+
+  if (!pedido) {
+
+    throw new Error(
+      'Ingresá el número de pedido.'
+    );
+
+  }
+
+
+  if (!cliente) {
+
+    throw new Error(
+      'Ingresá el cliente.'
+    );
+
+  }
+
+
+  if (!usuario) {
+
+    throw new Error(
+      'Ingresá el usuario.'
+    );
+
+  }
+
+
+  const lock =
+    LockService
+      .getScriptLock();
+
+
+  lock.waitLock(
+    10000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hojaPedidos =
+      ss.getSheetByName(
+        CONFIG.HOJA_PEDIDOS
+      );
+
+
+    if (!hojaPedidos) {
+
+      throw new Error(
+        'No existe la hoja PEDIDOS.'
+      );
+
+    }
+
+
+    const operacionExistente =
+      buscarOperacionActivaPorPedido_(
+        hojaPedidos,
+        pedido
+      );
+
+
+    if (
+      operacionExistente
+    ) {
+
+      throw new Error(
+        'El pedido ' +
+        pedido +
+        ' ya tiene una operación activa: ' +
+        operacionExistente
+      );
+
+    }
+
+
+    const numero =
+      obtenerSiguienteNumeroOperacion_(
+        hojaPedidos
+      );
+
+
+    const idOperacion =
+      'OP-' +
+      String(
+        numero
+      )
+        .padStart(
+          6,
+          '0'
+        );
+
+
+    const fecha =
+      new Date();
+
+
+    hojaPedidos
+      .appendRow([
+
+        idOperacion,
+        fecha,
+        pedido,
+        cliente,
+        usuario,
+        'ACTIVO'
+
+      ]);
+
+
+    const fila =
+      hojaPedidos
+        .getLastRow();
+
+
+    hojaPedidos
+      .getRange(
+        fila,
+        2
+      )
+      .setNumberFormat(
+        'dd/MM/yyyy HH:mm:ss'
+      );
+
+
+    SpreadsheetApp
+      .flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      idOperacion:
+        idOperacion,
+
+      pedido:
+        pedido,
+
+      cliente:
+        cliente,
+
+      usuario:
+        usuario,
+
+      estado:
+        'ACTIVO'
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * BUSCAR OPERACION ACTIVA POR PEDIDO
+ *******************************************************/
+
+function buscarOperacionActivaPorPedido_(
+  hoja,
+  pedido
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return null;
+
+  }
+
+
+  const datos =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        6
+      )
+      .getValues();
+
+
+  for (
+    let i = 0;
+    i < datos.length;
+    i++
+  ) {
+
+    const numeroPedido =
+      String(
+        datos[i][2] || ''
+      )
+        .trim();
+
+
+    const estado =
+      String(
+        datos[i][5] || ''
+      )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      numeroPedido ===
+        pedido &&
+      estado ===
+        'ACTIVO'
+    ) {
+
+      return String(
+        datos[i][0]
+      );
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/*******************************************************
+ * SIGUIENTE OPERACION
+ *******************************************************/
+
+function obtenerSiguienteNumeroOperacion_(
+  hoja
+) {
+
+  return obtenerSiguienteNumeroPorPrefijo_(
+    hoja,
+    'OP'
+  );
+
+}
+
+
+/*******************************************************
+ * BUSCAR OPERACION POR ID
+ *******************************************************/
+
+function obtenerOperacionPorId_(
+  hoja,
+  idOperacion
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return null;
+
+  }
+
+
+  const datos =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        6
+      )
+      .getValues();
+
+
+  for (
+    let i = 0;
+    i < datos.length;
+    i++
+  ) {
+
+    if (
+      String(
+        datos[i][0]
+      ) ===
+      idOperacion
+    ) {
+
+      return {
+
+        fila:
+          i + 2,
+
+        idOperacion:
+          String(
+            datos[i][0]
+          ),
+
+        pedido:
+          String(
+            datos[i][2]
+          ),
+
+        cliente:
+          String(
+            datos[i][3]
+          ),
+
+        usuario:
+          String(
+            datos[i][4]
+          ),
+
+        estado:
+          String(
+            datos[i][5]
+          )
+            .trim()
+            .toUpperCase()
+
+      };
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/*******************************************************
+ * NORMALIZAR QR
+ *******************************************************/
+
+function normalizarCodigoQR_(
+  valor
+) {
+
+  let texto =
+    String(
+      valor || ''
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (!texto) {
+
+    return null;
+
+  }
+
+
+  if (
+    texto.indexOf(
+      'STOCK-BSF|'
+    ) === 0
+  ) {
+
+    texto =
+      texto.replace(
+        'STOCK-BSF|',
+        ''
+      );
+
+  }
+
+
+  if (
+    !/^CJ-\d{6}$/
+      .test(
+        texto
+      )
+  ) {
+
+    return null;
+
+  }
+
+
+  return texto;
+
+}
+
+
+/*******************************************************
+ * CONSULTAR CAJA
+ *******************************************************/
+
+function consultarCajaProduccion(
+  valorEscaneado
+) {
+
+  const codigo =
+    normalizarCodigoQR_(
+      valorEscaneado
+    );
+
+
+  if (!codigo) {
+
+    throw new Error(
+      'No se pudo identificar la caja.'
+    );
+
+  }
+
+
+  const ss =
+    obtenerSpreadsheet_();
+
+
+  const hoja =
+    ss.getSheetByName(
+      CONFIG.HOJA_CAJAS
+    );
+
+
+  if (!hoja) {
+
+    throw new Error(
+      'No existe la hoja CAJAS.'
+    );
+
+  }
+
+
+  const caja =
+    obtenerCajaPorCodigo_(
+      hoja,
+      codigo
+    );
+
+
+  if (!caja) {
+
+    throw new Error(
+      'No se encontró la caja ' +
+      codigo +
+      '.'
+    );
+
+  }
+
+
+  return {
+
+    idCaja:
+      caja.idCaja,
+
+    codigoCaja:
+      caja.codigoCaja,
+
+    idProducto:
+      caja.idProducto,
+
+    producto:
+      caja.producto,
+
+    cantidadInicial:
+      caja.cantidadInicial,
+
+    cantidadActual:
+      caja.cantidadActual,
+
+    estado:
+      caja.estado
+
+  };
+
+}
+
+
+/*******************************************************
+ * BUSCAR CAJA POR CODIGO
+ *******************************************************/
+
+function obtenerCajaPorCodigo_(
+  hoja,
+  codigo
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return null;
+
+  }
+
+
+  const datos =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        9
+      )
+      .getValues();
+
+
+  for (
+    let i = 0;
+    i < datos.length;
+    i++
+  ) {
+
+    const codigoFila =
+      String(
+        datos[i][1] || ''
+      )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      codigoFila ===
+      codigo
+    ) {
+
+      return {
+
+        fila:
+          i + 2,
+
+        idCaja:
+          datos[i][0],
+
+        codigoCaja:
+          datos[i][1],
+
+        idProducto:
+          datos[i][3],
+
+        producto:
+          datos[i][4],
+
+        cantidadInicial:
+          Number(
+            datos[i][5]
+          ),
+
+        cantidadActual:
+          Number(
+            datos[i][6]
+          ),
+
+        estado:
+          String(
+            datos[i][7] || ''
+          )
+
+      };
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/*******************************************************
+ * SIGUIENTE MOVIMIENTO
+ *******************************************************/
+
+function obtenerSiguienteNumeroMovimiento_(
+  hoja
+) {
+
+  return obtenerSiguienteNumeroPorPrefijo_(
+    hoja,
+    'MOV'
+  );
+
+}
+/*******************************************************
+ * DESCONTAR STOCK
+ *******************************************************/
+
+function confirmarDescuento(
+  datos
+) {
+
+  if (!datos) {
+
+    throw new Error(
+      'No se recibieron datos.'
+    );
+
+  }
+
+
+  const idOperacion =
+    String(
+      datos.idOperacion || ''
+    )
+      .trim();
+
+
+  const codigoCaja =
+    normalizarCodigoQR_(
+      datos.codigoCaja
+    );
+
+
+  const cantidad =
+    Number(
+      datos.cantidad
+    );
+
+
+  const usuario =
+    String(
+      datos.usuario || ''
+    )
+      .trim();
+
+
+  if (!idOperacion) {
+
+    throw new Error(
+      'No hay una operación activa.'
+    );
+
+  }
+
+
+  if (!codigoCaja) {
+
+    throw new Error(
+      'Código de caja inválido.'
+    );
+
+  }
+
+
+  if (
+    !Number.isInteger(
+      cantidad
+    ) ||
+    cantidad <= 0
+  ) {
+
+    throw new Error(
+      'La cantidad debe ser un número entero mayor a 0.'
+    );
+
+  }
+
+
+  if (!usuario) {
+
+    throw new Error(
+      'No se identificó el usuario.'
+    );
+
+  }
+
+
+  const lock =
+    LockService
+      .getScriptLock();
+
+
+  lock.waitLock(
+    15000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hojaPedidos =
+      ss.getSheetByName(
+        CONFIG.HOJA_PEDIDOS
+      );
+
+
+    const hojaCajas =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    const hojaMovimientos =
+      ss.getSheetByName(
+        CONFIG.HOJA_MOVIMIENTOS
+      );
+
+
+    const operacion =
+      obtenerOperacionPorId_(
+        hojaPedidos,
+        idOperacion
+      );
+
+
+    if (!operacion) {
+
+      throw new Error(
+        'La operación no existe.'
+      );
+
+    }
+
+
+    if (
+      operacion.estado !==
+      'ACTIVO'
+    ) {
+
+      throw new Error(
+        'La operación ya no está activa.'
+      );
+
+    }
+
+
+    const caja =
+      obtenerCajaPorCodigo_(
+        hojaCajas,
+        codigoCaja
+      );
+
+
+    if (!caja) {
+
+      throw new Error(
+        'La caja no existe.'
+      );
+
+    }
+
+
+    if (
+      caja.estado
+        .trim()
+        .toUpperCase() !==
+      'EN USO'
+    ) {
+
+      throw new Error(
+        'La caja ' +
+        codigoCaja +
+        ' está en estado "' +
+        caja.estado +
+        '". Solo se puede descontar una caja EN USO.'
+      );
+
+    }
+
+
+    const cantidadAntes =
+      Number(
+        caja.cantidadActual
+      );
+
+
+    if (
+      cantidad >
+      cantidadAntes
+    ) {
+
+      throw new Error(
+        'Stock insuficiente. La caja tiene ' +
+        cantidadAntes +
+        ' packings.'
+      );
+
+    }
+
+
+    const cantidadDespues =
+      cantidadAntes -
+      cantidad;
+
+
+    hojaCajas
+      .getRange(
+        caja.fila,
+        7
+      )
+      .setValue(
+        cantidadDespues
+      );
+
+
+    const siguienteMovimiento =
+      obtenerSiguienteNumeroMovimiento_(
+        hojaMovimientos
+      );
+
+
+    const idMovimiento =
+      'MOV-' +
+      String(
+        siguienteMovimiento
+      )
+        .padStart(
+          6,
+          '0'
+        );
+
+
+    const fecha =
+      new Date();
+
+
+    hojaMovimientos
+      .appendRow([
+
+        idMovimiento,
+
+        idOperacion,
+
+        fecha,
+
+        operacion.pedido,
+
+        operacion.cliente,
+
+        caja.idCaja,
+
+        caja.codigoCaja,
+
+        caja.idProducto,
+
+        caja.producto,
+
+        cantidadAntes,
+
+        cantidad,
+
+        cantidadDespues,
+
+        usuario,
+
+        'ACTIVO',
+
+        '',
+
+        ''
+
+      ]);
+
+
+    const filaMovimiento =
+      hojaMovimientos
+        .getLastRow();
+
+
+    hojaMovimientos
+      .getRange(
+        filaMovimiento,
+        3
+      )
+      .setNumberFormat(
+        'dd/MM/yyyy HH:mm:ss'
+      );
+
+
+    SpreadsheetApp
+      .flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      idMovimiento:
+        idMovimiento,
+
+      producto:
+        caja.producto,
+
+      codigoCaja:
+        caja.codigoCaja,
+
+      cantidadAntes:
+        cantidadAntes,
+
+      cantidadDescontada:
+        cantidad,
+
+      cantidadDespues:
+        cantidadDespues
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * FINALIZAR PEDIDO
+ *******************************************************/
+
+function finalizarPedido(
+  idOperacion
+) {
+
+  idOperacion =
+    String(
+      idOperacion || ''
+    )
+      .trim();
+
+
+  if (!idOperacion) {
+
+    throw new Error(
+      'No se recibió la operación.'
+    );
+
+  }
+
+
+  const lock =
+    LockService
+      .getScriptLock();
+
+
+  lock.waitLock(
+    10000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hoja =
+      ss.getSheetByName(
+        CONFIG.HOJA_PEDIDOS
+      );
+
+
+    const operacion =
+      obtenerOperacionPorId_(
+        hoja,
+        idOperacion
+      );
+
+
+    if (!operacion) {
+
+      throw new Error(
+        'La operación no existe.'
+      );
+
+    }
+
+
+    if (
+      operacion.estado !==
+      'ACTIVO'
+    ) {
+
+      throw new Error(
+        'El pedido ya está finalizado.'
+      );
+
+    }
+
+
+    hoja
+      .getRange(
+        operacion.fila,
+        6
+      )
+      .setValue(
+        'FINALIZADO'
+      );
+
+
+    SpreadsheetApp
+      .flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      idOperacion:
+        idOperacion,
+
+      estado:
+        'FINALIZADO'
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * BUSCAR MOVIMIENTO POR ID
+ *******************************************************/
+
+function obtenerMovimientoPorId_(
+  hoja,
+  idMovimiento
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return null;
+
+  }
+
+
+  const datos =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        16
+      )
+      .getValues();
+
+
+  for (
+    let i = 0;
+    i < datos.length;
+    i++
+  ) {
+
+    if (
+      String(
+        datos[i][0] || ''
+      )
+        .trim()
+        .toUpperCase() ===
+      String(
+        idMovimiento || ''
+      )
+        .trim()
+        .toUpperCase()
+    ) {
+
+      return {
+
+        fila:
+          i + 2,
+
+        idMovimiento:
+          String(
+            datos[i][0]
+          ),
+
+        idOperacion:
+          String(
+            datos[i][1]
+          ),
+
+        pedido:
+          String(
+            datos[i][3]
+          ),
+
+        cliente:
+          String(
+            datos[i][4]
+          ),
+
+        idCaja:
+          datos[i][5],
+
+        codigoCaja:
+          String(
+            datos[i][6]
+          ),
+
+        idProducto:
+          datos[i][7],
+
+        producto:
+          String(
+            datos[i][8]
+          ),
+
+        cantidadAntes:
+          Number(
+            datos[i][9]
+          ),
+
+        cantidadDescontada:
+          Number(
+            datos[i][10]
+          ),
+
+        cantidadDespues:
+          Number(
+            datos[i][11]
+          ),
+
+        usuario:
+          String(
+            datos[i][12]
+          ),
+
+        estado:
+          String(
+            datos[i][13] || ''
+          )
+            .trim()
+            .toUpperCase()
+
+      };
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/*******************************************************
+ * ANULAR MOVIMIENTO INDIVIDUAL
+ *******************************************************/
+
+function anularMovimiento(
+  datos
+) {
+
+  if (!datos) {
+
+    throw new Error(
+      'No se recibieron datos.'
+    );
+
+  }
+
+
+  const idMovimiento =
+    String(
+      datos.idMovimiento || ''
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const usuarioAnulacion =
+    String(
+      datos.usuarioAnulacion || ''
+    )
+      .trim();
+
+
+  if (!idMovimiento) {
+
+    throw new Error(
+      'Ingresá el movimiento a anular.'
+    );
+
+  }
+
+
+  if (!usuarioAnulacion) {
+
+    throw new Error(
+      'Ingresá el usuario que realiza la anulación.'
+    );
+
+  }
+
+
+  const lock =
+    LockService
+      .getScriptLock();
+
+
+  lock.waitLock(
+    15000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hojaMovimientos =
+      ss.getSheetByName(
+        CONFIG.HOJA_MOVIMIENTOS
+      );
+
+
+    const hojaCajas =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    const movimiento =
+      obtenerMovimientoPorId_(
+        hojaMovimientos,
+        idMovimiento
+      );
+
+
+    if (!movimiento) {
+
+      throw new Error(
+        'No se encontró el movimiento ' +
+        idMovimiento +
+        '.'
+      );
+
+    }
+
+
+    if (
+      movimiento.estado !==
+      'ACTIVO'
+    ) {
+
+      throw new Error(
+        'El movimiento ' +
+        idMovimiento +
+        ' ya está anulado.'
+      );
+
+    }
+
+
+    const caja =
+      obtenerCajaPorCodigo_(
+        hojaCajas,
+        movimiento.codigoCaja
+      );
+
+
+    if (!caja) {
+
+      throw new Error(
+        'No se encontró la caja ' +
+        movimiento.codigoCaja +
+        '.'
+      );
+
+    }
+
+
+    const stockAntes =
+      Number(
+        caja.cantidadActual
+      );
+
+
+    const cantidadDevuelta =
+      Number(
+        movimiento.cantidadDescontada
+      );
+
+
+    const stockDespues =
+      stockAntes +
+      cantidadDevuelta;
+
+
+    hojaCajas
+      .getRange(
+        caja.fila,
+        7
+      )
+      .setValue(
+        stockDespues
+      );
+
+
+    const fechaAnulacion =
+      new Date();
+
+
+    hojaMovimientos
+      .getRange(
+        movimiento.fila,
+        14
+      )
+      .setValue(
+        'ANULADO'
+      );
+
+
+    hojaMovimientos
+      .getRange(
+        movimiento.fila,
+        15
+      )
+      .setValue(
+        fechaAnulacion
+      )
+      .setNumberFormat(
+        'dd/MM/yyyy HH:mm:ss'
+      );
+
+
+    hojaMovimientos
+      .getRange(
+        movimiento.fila,
+        16
+      )
+      .setValue(
+        usuarioAnulacion
+      );
+
+
+    SpreadsheetApp
+      .flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      tipo:
+        'MOVIMIENTO',
+
+      idMovimiento:
+        movimiento.idMovimiento,
+
+      pedido:
+        movimiento.pedido,
+
+      producto:
+        movimiento.producto,
+
+      codigoCaja:
+        movimiento.codigoCaja,
+
+      cantidadDevuelta:
+        cantidadDevuelta,
+
+      stockAntes:
+        stockAntes,
+
+      stockDespues:
+        stockDespues,
+
+      estado:
+        'ANULADO'
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * ANULAR PEDIDO COMPLETO
+ *******************************************************/
+
+function anularPedidoCompleto(
+  datos
+) {
+
+  if (!datos) {
+
+    throw new Error(
+      'No se recibieron datos.'
+    );
+
+  }
+
+
+  const pedido =
+    String(
+      datos.pedido || ''
+    )
+      .trim();
+
+
+  const usuarioAnulacion =
+    String(
+      datos.usuarioAnulacion || ''
+    )
+      .trim();
+
+
+  if (!pedido) {
+
+    throw new Error(
+      'Ingresá el número de pedido.'
+    );
+
+  }
+
+
+  if (!usuarioAnulacion) {
+
+    throw new Error(
+      'Ingresá el usuario que realiza la anulación.'
+    );
+
+  }
+
+
+  const lock =
+    LockService
+      .getScriptLock();
+
+
+  lock.waitLock(
+    20000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hojaMovimientos =
+      ss.getSheetByName(
+        CONFIG.HOJA_MOVIMIENTOS
+      );
+
+
+    const hojaCajas =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    const hojaPedidos =
+      ss.getSheetByName(
+        CONFIG.HOJA_PEDIDOS
+      );
+
+
+    /***************************************************
+     * BUSCAR OPERACIONES
+     ***************************************************/
+
+    const ultimaFilaPedidos =
+      hojaPedidos
+        .getLastRow();
+
+
+    const operacionesAnuladas =
+      [];
+
+
+    if (
+      ultimaFilaPedidos >= 2
+    ) {
+
+      const pedidos =
+        hojaPedidos
+          .getRange(
+            2,
+            1,
+            ultimaFilaPedidos - 1,
+            6
+          )
+          .getValues();
+
+
+      for (
+        let i = 0;
+        i < pedidos.length;
+        i++
+      ) {
+
+        const numeroPedido =
+          String(
+            pedidos[i][2] || ''
+          )
+            .trim();
+
+
+        if (
+          numeroPedido !==
+          pedido
+        ) {
+
+          continue;
+
+        }
+
+
+        operacionesAnuladas
+          .push({
+
+            fila:
+              i + 2,
+
+            idOperacion:
+              String(
+                pedidos[i][0]
+              )
+
+          });
+
+      }
+
+    }
+
+
+    if (
+      operacionesAnuladas.length === 0
+    ) {
+
+      throw new Error(
+        'No se encontraron operaciones para el pedido ' +
+        pedido +
+        '.'
+      );
+
+    }
+
+
+    /***************************************************
+     * MOVIMIENTOS ACTIVOS
+     ***************************************************/
+
+    const ultimaFilaMovimientos =
+      hojaMovimientos
+        .getLastRow();
+
+
+    const movimientosAnulados =
+      [];
+
+
+    const devolucionesPorCaja =
+      {};
+
+
+    if (
+      ultimaFilaMovimientos >= 2
+    ) {
+
+      const movimientos =
+        hojaMovimientos
+          .getRange(
+            2,
+            1,
+            ultimaFilaMovimientos - 1,
+            16
+          )
+          .getValues();
+
+
+      for (
+        let i = 0;
+        i < movimientos.length;
+        i++
+      ) {
+
+        const pedidoMovimiento =
+          String(
+            movimientos[i][3] || ''
+          )
+            .trim();
+
+
+        const estadoMovimiento =
+          String(
+            movimientos[i][13] || ''
+          )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+          pedidoMovimiento !==
+          pedido
+        ) {
+
+          continue;
+
+        }
+
+
+        if (
+          estadoMovimiento !==
+          'ACTIVO'
+        ) {
+
+          continue;
+
+        }
+
+
+        const codigoCaja =
+          String(
+            movimientos[i][6] || ''
+          )
+            .trim()
+            .toUpperCase();
+
+
+        const cantidad =
+          Number(
+            movimientos[i][10]
+          );
+
+
+        if (
+          !devolucionesPorCaja[
+            codigoCaja
+          ]
+        ) {
+
+          devolucionesPorCaja[
+            codigoCaja
+          ] =
+            0;
+
+        }
+
+
+        devolucionesPorCaja[
+          codigoCaja
+        ] +=
+          cantidad;
+
+
+        movimientosAnulados
+          .push({
+
+            fila:
+              i + 2,
+
+            idMovimiento:
+              String(
+                movimientos[i][0]
+              ),
+
+            idOperacion:
+              String(
+                movimientos[i][1]
+              ),
+
+            codigoCaja:
+              codigoCaja,
+
+            producto:
+              String(
+                movimientos[i][8]
+              ),
+
+            cantidad:
+              cantidad
+
+          });
+
+      }
+
+    }
+
+
+    /***************************************************
+     * VALIDAR CAJAS
+     ***************************************************/
+
+    const codigosCaja =
+      Object.keys(
+        devolucionesPorCaja
+      );
+
+
+    const cajasPreparadas =
+      [];
+
+
+    for (
+      let i = 0;
+      i < codigosCaja.length;
+      i++
+    ) {
+
+      const codigoCaja =
+        codigosCaja[i];
+
+
+      const caja =
+        obtenerCajaPorCodigo_(
+          hojaCajas,
+          codigoCaja
+        );
+
+
+      if (!caja) {
+
+        throw new Error(
+          'No se encontró la caja ' +
+          codigoCaja +
+          '. No se realizó la anulación.'
+        );
+
+      }
+
+
+      cajasPreparadas
+        .push({
+
+          caja:
+            caja,
+
+          cantidad:
+            devolucionesPorCaja[
+              codigoCaja
+            ]
+
+        });
+
+    }
+
+
+    /***************************************************
+     * DEVOLVER STOCK
+     ***************************************************/
+
+    const cajasDevueltas =
+      [];
+
+
+    cajasPreparadas
+      .forEach(
+        function(item) {
+
+          const caja =
+            item.caja;
+
+
+          const cantidadTotal =
+            Number(
+              item.cantidad
+            );
+
+
+          const stockAntes =
+            Number(
+              caja.cantidadActual
+            );
+
+
+          const stockDespues =
+            stockAntes +
+            cantidadTotal;
+
+
+          hojaCajas
+            .getRange(
+              caja.fila,
+              7
+            )
+            .setValue(
+              stockDespues
+            );
+
+
+          cajasDevueltas
+            .push({
+
+              codigoCaja:
+                caja.codigoCaja,
+
+              producto:
+                caja.producto,
+
+              cantidadDevuelta:
+                cantidadTotal,
+
+              stockAntes:
+                stockAntes,
+
+              stockDespues:
+                stockDespues
+
+            });
+
+        }
+      );
+
+
+    /***************************************************
+     * ANULAR MOVIMIENTOS
+     ***************************************************/
+
+    const fechaAnulacion =
+      new Date();
+
+
+    movimientosAnulados
+      .forEach(
+        function(movimiento) {
+
+          hojaMovimientos
+            .getRange(
+              movimiento.fila,
+              14
+            )
+            .setValue(
+              'ANULADO'
+            );
+
+
+          hojaMovimientos
+            .getRange(
+              movimiento.fila,
+              15
+            )
+            .setValue(
+              fechaAnulacion
+            )
+            .setNumberFormat(
+              'dd/MM/yyyy HH:mm:ss'
+            );
+
+
+          hojaMovimientos
+            .getRange(
+              movimiento.fila,
+              16
+            )
+            .setValue(
+              usuarioAnulacion
+            );
+
+        }
+      );
+
+
+    /***************************************************
+     * ANULAR OPERACIONES
+     ***************************************************/
+
+    operacionesAnuladas
+      .forEach(
+        function(operacion) {
+
+          hojaPedidos
+            .getRange(
+              operacion.fila,
+              6
+            )
+            .setValue(
+              'ANULADO'
+            );
+
+        }
+      );
+
+
+    SpreadsheetApp
+      .flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      tipo:
+        'PEDIDO_COMPLETO',
+
+      pedido:
+        pedido,
+
+      cantidadOperaciones:
+        operacionesAnuladas.length,
+
+      operacionesAnuladas:
+        operacionesAnuladas.map(
+          function(op) {
+
+            return (
+              op.idOperacion
+            );
+
+          }
+        ),
+
+      cantidadMovimientos:
+        movimientosAnulados.length,
+
+      movimientosAnulados:
+        movimientosAnulados.map(
+          function(movimiento) {
+
+            return (
+              movimiento.idMovimiento
+            );
+
+          }
+        ),
+
+      cajasDevueltas:
+        cajasDevueltas
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+/*******************************************************
+ * CONSULTAR PEDIDO COMPLETO
+ *
+ * SOLO LECTURA.
+ *******************************************************/
+
+function consultarPedidoCompleto(
+  numeroPedido
+) {
+
+  const pedido =
+    String(
+      numeroPedido || ''
+    )
+      .trim();
+
+
+  if (!pedido) {
+
+    throw new Error(
+      'Ingresá el número de pedido.'
+    );
+
+  }
+
+
+  const ss =
+    obtenerSpreadsheet_();
+
+
+  const hojaPedidos =
+    ss.getSheetByName(
+      CONFIG.HOJA_PEDIDOS
+    );
+
+
+  const hojaMovimientos =
+    ss.getSheetByName(
+      CONFIG.HOJA_MOVIMIENTOS
+    );
+
+
+  if (
+    !hojaPedidos ||
+    !hojaMovimientos
+  ) {
+
+    throw new Error(
+      'No se encontraron las hojas necesarias.'
+    );
+
+  }
+
+
+  /*****************************************************
+   * OPERACIONES
+   *****************************************************/
+
+  const operaciones =
+    [];
+
+
+  const ultimaFilaPedidos =
+    hojaPedidos
+      .getLastRow();
+
+
+  if (
+    ultimaFilaPedidos >= 2
+  ) {
+
+    const datosPedidos =
+      hojaPedidos
+        .getRange(
+          2,
+          1,
+          ultimaFilaPedidos - 1,
+          6
+        )
+        .getValues();
+
+
+    for (
+      let i = 0;
+      i < datosPedidos.length;
+      i++
+    ) {
+
+      const pedidoFila =
+        String(
+          datosPedidos[i][2] || ''
+        )
+          .trim();
+
+
+      if (
+        pedidoFila !==
+        pedido
+      ) {
+
+        continue;
+
+      }
+
+
+      operaciones.push({
+
+        idOperacion:
+          String(
+            datosPedidos[i][0]
+          ),
+
+        fecha:
+          formatearFechaSeguro_(
+            datosPedidos[i][1]
+          ),
+
+        pedido:
+          pedidoFila,
+
+        cliente:
+          String(
+            datosPedidos[i][3] || ''
+          ),
+
+        usuario:
+          String(
+            datosPedidos[i][4] || ''
+          ),
+
+        estado:
+          String(
+            datosPedidos[i][5] || ''
+          )
+            .trim()
+            .toUpperCase(),
+
+        movimientos:
+          []
+
+      });
+
+    }
+
+  }
+
+
+  if (
+    operaciones.length === 0
+  ) {
+
+    throw new Error(
+      'No se encontró el pedido ' +
+      pedido +
+      '.'
+    );
+
+  }
+
+
+  /*****************************************************
+   * MAPA OPERACIONES
+   *****************************************************/
+
+  const mapaOperaciones =
+    {};
+
+
+  operaciones
+    .forEach(
+      function(op) {
+
+        mapaOperaciones[
+          op.idOperacion
+        ] =
+          op;
+
+      }
+    );
+
+
+  /*****************************************************
+   * MOVIMIENTOS
+   *****************************************************/
+
+  let cantidadMovimientos =
+    0;
+
+
+  let movimientosActivos =
+    0;
+
+
+  let movimientosAnulados =
+    0;
+
+
+  let packingsActivos =
+    0;
+
+
+  const ultimaFilaMovimientos =
+    hojaMovimientos
+      .getLastRow();
+
+
+  if (
+    ultimaFilaMovimientos >= 2
+  ) {
+
+    const datosMovimientos =
+      hojaMovimientos
+        .getRange(
+          2,
+          1,
+          ultimaFilaMovimientos - 1,
+          16
+        )
+        .getValues();
+
+
+    for (
+      let i = 0;
+      i < datosMovimientos.length;
+      i++
+    ) {
+
+      const pedidoMovimiento =
+        String(
+          datosMovimientos[i][3] || ''
+        )
+          .trim();
+
+
+      if (
+        pedidoMovimiento !==
+        pedido
+      ) {
+
+        continue;
+
+      }
+
+
+      const idOperacion =
+        String(
+          datosMovimientos[i][1] || ''
+        );
+
+
+      const estado =
+        String(
+          datosMovimientos[i][13] || ''
+        )
+          .trim()
+          .toUpperCase();
+
+
+      const cantidad =
+        Number(
+          datosMovimientos[i][10]
+        ) || 0;
+
+
+      const movimiento = {
+
+        idMovimiento:
+          String(
+            datosMovimientos[i][0] || ''
+          ),
+
+        fecha:
+          formatearFechaSeguro_(
+            datosMovimientos[i][2]
+          ),
+
+        idOperacion:
+          idOperacion,
+
+        producto:
+          String(
+            datosMovimientos[i][8] || ''
+          ),
+
+        codigoCaja:
+          String(
+            datosMovimientos[i][6] || ''
+          ),
+
+        cantidadAntes:
+          Number(
+            datosMovimientos[i][9]
+          ) || 0,
+
+        cantidadDescontada:
+          cantidad,
+
+        cantidadDespues:
+          Number(
+            datosMovimientos[i][11]
+          ) || 0,
+
+        usuario:
+          String(
+            datosMovimientos[i][12] || ''
+          ),
+
+        estado:
+          estado,
+
+        fechaAnulacion:
+          formatearFechaSeguro_(
+            datosMovimientos[i][14]
+          ),
+
+        usuarioAnulacion:
+          String(
+            datosMovimientos[i][15] || ''
+          )
+
+      };
+
+
+      cantidadMovimientos++;
+
+
+      if (
+        estado ===
+        'ACTIVO'
+      ) {
+
+        movimientosActivos++;
+
+
+        packingsActivos +=
+          cantidad;
+
+      }
+
+
+      if (
+        estado ===
+        'ANULADO'
+      ) {
+
+        movimientosAnulados++;
+
+      }
+
+
+      if (
+        mapaOperaciones[
+          idOperacion
+        ]
+      ) {
+
+        mapaOperaciones[
+          idOperacion
+        ]
+          .movimientos
+          .push(
+            movimiento
+          );
+
+      }
+
+    }
+
+  }
+
+
+  /*****************************************************
+   * RESUMEN
+   *****************************************************/
+
+  return {
+
+    numeroPedido:
+      pedido,
+
+    cliente:
+      operaciones[0]
+        .cliente,
+
+    cantidadOperaciones:
+      operaciones.length,
+
+    cantidadMovimientos:
+      cantidadMovimientos,
+
+    movimientosActivos:
+      movimientosActivos,
+
+    movimientosAnulados:
+      movimientosAnulados,
+
+    packingsActivos:
+      packingsActivos,
+
+    operaciones:
+      operaciones
+
+  };
+
+}
+
+
+/*******************************************************
+ * FORMATEAR FECHAS
+ *******************************************************/
+
+function formatearFechaSeguro_(
+  valor
+) {
+
+  if (
+    !valor
+  ) {
+
+    return '';
+
+  }
+
+
+  const fecha =
+    new Date(
+      valor
+    );
+
+
+  if (
+    isNaN(
+      fecha.getTime()
+    )
+  ) {
+
+    return '';
+
+  }
+
+
+  return Utilities
+    .formatDate(
+      fecha,
+      Session.getScriptTimeZone(),
+      'dd/MM/yyyy HH:mm:ss'
+    );
+
+}
+
+
+/*******************************************************
+ * NUMERACION GENERICA
+ *******************************************************/
+
+function obtenerSiguienteNumeroPorPrefijo_(
+  hoja,
+  prefijo
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+
+    return 1;
+
+  }
+
+
+  const valores =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        1
+      )
+      .getValues();
+
+
+  const regex =
+    new RegExp(
+      '^' +
+      prefijo +
+      '-(\\d+)$'
+    );
+
+
+  let maximo =
+    0;
+
+
+  valores
+    .forEach(
+      function(fila) {
+
+        const coincidencia =
+          String(
+            fila[0] || ''
+          )
+            .match(
+              regex
+            );
+
+
+        if (
+          !coincidencia
+        ) {
+
+          return;
+
+        }
+
+
+        const numero =
+          Number(
+            coincidencia[1]
+          );
+
+
+        if (
+          numero >
+          maximo
+        ) {
+
+          maximo =
+            numero;
+
+        }
+
+      }
+    );
+
+
+  return (
+    maximo + 1
+  );
+
+}
+
+
+/*******************************************************
+ * ERRORES
+ *******************************************************/
+
+function obtenerMensajeError_(
   error
 ) {
 
@@ -5100,20 +5070,12 @@ function obtenerMensajeError(
 
 
   if (
-    typeof error ===
-    'string'
-  ) {
-
-    return error;
-
-  }
-
-
-  if (
     error.message
   ) {
 
-    return error.message;
+    return (
+      error.message
+    );
 
   }
 
@@ -5124,8 +5086,574 @@ function obtenerMensajeError(
 
 }
 
-</script>
 
-</body>
+/*******************************************************
+ * AJUSTES FORZADOS DE STOCK
+ *
+ * TIPOS:
+ * AGREGAR
+ * BAJAR
+ *******************************************************/
 
-</html>
+function ajustarStockForzado(datos) {
+
+  if (!datos) {
+    throw new Error('No se recibieron datos.');
+  }
+
+
+  const codigoCaja =
+    normalizarCodigoQR_(
+      datos.codigoCaja
+    );
+
+
+  const cantidad =
+    Number(
+      datos.cantidad
+    );
+
+
+  const tipo =
+    String(
+      datos.tipo || ''
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const motivo =
+    String(
+      datos.motivo || ''
+    )
+      .trim();
+
+
+  const usuario =
+    String(
+      datos.usuario || ''
+    )
+      .trim();
+
+
+  if (!codigoCaja) {
+    throw new Error(
+      'Código de caja inválido.'
+    );
+  }
+
+
+  if (
+    !Number.isInteger(cantidad) ||
+    cantidad <= 0
+  ) {
+    throw new Error(
+      'La cantidad debe ser un número entero mayor a 0.'
+    );
+  }
+
+
+  if (
+    ['AGREGAR', 'BAJAR']
+      .indexOf(tipo) === -1
+  ) {
+    throw new Error(
+      'Tipo de ajuste inválido.'
+    );
+  }
+
+
+  if (!usuario) {
+    throw new Error(
+      'Seleccioná el usuario administrador.'
+    );
+  }
+
+
+  if (!motivo) {
+    throw new Error(
+      'Ingresá el motivo del ajuste.'
+    );
+  }
+
+
+  const lock =
+    LockService.getScriptLock();
+
+
+  lock.waitLock(
+    15000
+  );
+
+
+  try {
+
+    const ss =
+      obtenerSpreadsheet_();
+
+
+    const hojaCajas =
+      ss.getSheetByName(
+        CONFIG.HOJA_CAJAS
+      );
+
+
+    if (!hojaCajas) {
+      throw new Error(
+        'No existe la hoja CAJAS.'
+      );
+    }
+
+
+    const caja =
+      obtenerCajaPorCodigo_(
+        hojaCajas,
+        codigoCaja
+      );
+
+
+    if (!caja) {
+      throw new Error(
+        'No se encontró la caja ' +
+        codigoCaja +
+        '.'
+      );
+    }
+
+
+    const stockAntes =
+      Number(
+        caja.cantidadActual
+      );
+
+
+    const variacion =
+      tipo === 'AGREGAR'
+        ? cantidad
+        : -cantidad;
+
+
+    const stockDespues =
+      stockAntes +
+      variacion;
+
+
+    if (
+      stockDespues < 0
+    ) {
+      throw new Error(
+        'No se puede bajar ' +
+        cantidad +
+        ' porque la caja tiene ' +
+        stockAntes +
+        ' packings.'
+      );
+    }
+
+
+    const hojaAjustes =
+      obtenerOCrearHojaAjustes_(
+        ss
+      );
+
+
+    const idAjuste =
+      obtenerSiguienteIdAjuste_(
+        hojaAjustes
+      );
+
+
+    const fecha =
+      new Date();
+
+
+    /***************************************************
+     * MODIFICAR STOCK
+     ***************************************************/
+
+    hojaCajas
+      .getRange(
+        caja.fila,
+        7
+      )
+      .setValue(
+        stockDespues
+      );
+
+
+    /***************************************************
+     * REGISTRAR TRAZABILIDAD
+     ***************************************************/
+
+    hojaAjustes
+      .appendRow([
+
+        idAjuste,
+        fecha,
+        tipo,
+        codigoCaja,
+        caja.idProducto,
+        caja.producto,
+        stockAntes,
+        cantidad,
+        variacion,
+        stockDespues,
+        usuario,
+        motivo
+
+      ]);
+
+
+    const filaAjuste =
+      hojaAjustes.getLastRow();
+
+
+    hojaAjustes
+      .getRange(
+        filaAjuste,
+        2
+      )
+      .setNumberFormat(
+        'dd/MM/yyyy HH:mm:ss'
+      );
+
+
+    hojaAjustes
+      .getRange(
+        filaAjuste,
+        7,
+        1,
+        4
+      )
+      .setNumberFormat(
+        '0'
+      );
+
+
+    SpreadsheetApp.flush();
+
+
+    return {
+
+      ok:
+        true,
+
+      idAjuste:
+        idAjuste,
+
+      tipo:
+        tipo,
+
+      codigoCaja:
+        codigoCaja,
+
+      producto:
+        caja.producto,
+
+      cantidad:
+        cantidad,
+
+      variacion:
+        variacion,
+
+      stockAntes:
+        stockAntes,
+
+      stockDespues:
+        stockDespues,
+
+      usuario:
+        usuario,
+
+      motivo:
+        motivo
+
+    };
+
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
+
+}
+
+
+/*******************************************************
+ * HOJA DE TRAZABILIDAD DE AJUSTES
+ *******************************************************/
+
+function obtenerOCrearHojaAjustes_(
+  ss
+) {
+
+  let hoja =
+    ss.getSheetByName(
+      CONFIG.HOJA_AJUSTES
+    );
+
+
+  if (!hoja) {
+
+    hoja =
+      ss.insertSheet(
+        CONFIG.HOJA_AJUSTES
+      );
+
+
+    hoja
+      .getRange(
+        1,
+        1,
+        1,
+        12
+      )
+      .setValues([[
+        'ID AJUSTE',
+        'FECHA',
+        'TIPO',
+        'CODIGO CAJA',
+        'ID PRODUCTO',
+        'PRODUCTO',
+        'STOCK ANTES',
+        'CANTIDAD',
+        'VARIACION',
+        'STOCK DESPUES',
+        'USUARIO',
+        'MOTIVO'
+      ]]);
+
+
+    hoja
+      .getRange(
+        1,
+        1,
+        1,
+        12
+      )
+      .setFontWeight(
+        'bold'
+      );
+
+
+    hoja.setFrozenRows(
+      1
+    );
+
+  }
+
+
+  return hoja;
+
+}
+
+
+/*******************************************************
+ * SIGUIENTE ID DE AJUSTE
+ *******************************************************/
+
+function obtenerSiguienteIdAjuste_(
+  hoja
+) {
+
+  const ultimaFila =
+    hoja.getLastRow();
+
+
+  if (
+    ultimaFila < 2
+  ) {
+    return 'AJ-000001';
+  }
+
+
+  const ids =
+    hoja
+      .getRange(
+        2,
+        1,
+        ultimaFila - 1,
+        1
+      )
+      .getDisplayValues();
+
+
+  let maximo =
+    0;
+
+
+  ids.forEach(
+    function(fila) {
+
+      const match =
+        String(
+          fila[0] || ''
+        )
+          .trim()
+          .toUpperCase()
+          .match(
+            /^AJ-(\d+)$/
+          );
+
+
+      if (!match) {
+        return;
+      }
+
+
+      const numero =
+        Number(
+          match[1]
+        );
+
+
+      if (
+        numero > maximo
+      ) {
+        maximo =
+          numero;
+      }
+
+    }
+  );
+
+
+  return (
+    'AJ-' +
+    String(
+      maximo + 1
+    )
+      .padStart(
+        6,
+        '0'
+      )
+  );
+
+}
+
+
+
+/*******************************************************
+ * PRODUCCION - VER TODOS LOS PEDIDOS / RETOMAR
+ * - POST + PIN de produccion verificado en doPost
+ * - Un registro por numero de pedido, priorizando
+ *   ACTIVO > FINALIZADO > ANULADO.
+ * - No modifica movimientos ni crea nuevas operaciones.
+ *******************************************************/
+
+function listarPedidosProduccion(datos) {
+  const filtro = String((datos && datos.filtroUsuario) || '').trim();
+  const usuarios = ['Facundo', 'Candelaria', 'Joni Finanzas', 'Jonas'];
+  if (filtro && filtro !== 'Todos' && usuarios.indexOf(filtro) === -1) {
+    throw new Error('El filtro de usuario no es valido.');
+  }
+
+  const ss = obtenerSpreadsheet_();
+  const hoja = ss.getSheetByName(CONFIG.HOJA_PEDIDOS);
+  if (!hoja) throw new Error('No existe la hoja PEDIDOS.');
+
+  const ultima = hoja.getLastRow();
+  if (ultima < 2) return { ok: true, pedidos: [], total: 0 };
+  const filas = hoja.getRange(2, 1, ultima - 1, 6).getValues();
+  const agrupados = new Map();
+  const prioridad = { ACTIVO: 3, FINALIZADO: 2, ANULADO: 1 };
+
+  filas.forEach(function(fila, indice) {
+    const numero = String(fila[2] || '').trim();
+    const estado = String(fila[5] || '').trim().toUpperCase();
+    if (!numero) return;
+    const fecha = fila[1] instanceof Date ? fila[1] : new Date(fila[1]);
+    const milisegundos = isNaN(fecha.getTime()) ? 0 : fecha.getTime();
+    const item = {
+      idOperacion: String(fila[0] || '').trim(),
+      pedido: numero,
+      cliente: String(fila[3] || '').trim(),
+      usuarioCreador: String(fila[4] || '').trim(),
+      fecha: formatearFechaSeguro_(fila[1]),
+      estado: estado,
+      _orden: milisegundos,
+      _fila: indice + 2
+    };
+    const previo = agrupados.get(numero);
+    const actualPrioridad = prioridad[estado] || 0;
+    const previaPrioridad = previo ? (prioridad[previo.estado] || 0) : -1;
+    if (!previo || actualPrioridad > previaPrioridad ||
+        (actualPrioridad === previaPrioridad &&
+          (item._orden > previo._orden ||
+           (item._orden === previo._orden && item._fila > previo._fila)))) {
+      agrupados.set(numero, item);
+    }
+  });
+
+  const pedidos = Array.from(agrupados.values())
+    .filter(function(p) { return !filtro || filtro === 'Todos' || p.usuarioCreador === filtro; })
+    .sort(function(a, b) { return b._orden - a._orden || b._fila - a._fila; })
+    .map(function(p) {
+      return {
+        idOperacion: p.idOperacion,
+        pedido: p.pedido,
+        cliente: p.cliente,
+        usuarioCreador: p.usuarioCreador,
+        fecha: p.fecha,
+        estado: p.estado
+      };
+    });
+
+  return { ok: true, pedidos: pedidos, total: pedidos.length };
+}
+
+/*******************************************************
+ * RETOMAR SIN DUPLICAR OPERACIONES
+ * - Si ya esta ACTIVO, lo entrega sin tocar la hoja.
+ * - Si esta FINALIZADO, cambia solo PEDIDOS!F a ACTIVO.
+ * - Si esta ANULADO, no se puede retomar.
+ * - Lock compartido con descontar/finalizar.
+ * - La columna E (creador) permanece sin cambios.
+ *******************************************************/
+
+function retomarPedidoProduccion(datos) {
+  const idOperacion = String((datos && datos.idOperacion) || '').trim();
+  const usuario = String((datos && datos.usuario) || '').trim();
+  const usuarios = ['Facundo', 'Candelaria', 'Joni Finanzas', 'Jonas'];
+  if (!idOperacion) throw new Error('Selecciona una operacion.');
+  if (usuarios.indexOf(usuario) === -1) throw new Error('Selecciona el operario que retoma el pedido.');
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = obtenerSpreadsheet_();
+    const hoja = ss.getSheetByName(CONFIG.HOJA_PEDIDOS);
+    if (!hoja) throw new Error('No existe la hoja PEDIDOS.');
+    const op = obtenerOperacionPorId_(hoja, idOperacion);
+    if (!op) throw new Error('La operacion ya no existe. Actualiza la busqueda.');
+    if (op.estado === 'ANULADO') throw new Error('No se puede retomar un pedido anulado.');
+    if (op.estado !== 'ACTIVO' && op.estado !== 'FINALIZADO') {
+      throw new Error('El pedido tiene un estado no permitido: ' + op.estado);
+    }
+
+    const activa = buscarOperacionActivaPorPedido_(hoja, op.pedido);
+    if (activa && activa !== idOperacion) {
+      throw new Error('Este pedido ya tiene otra operacion activa (' + activa + '). Actualiza la lista y retoma esa operacion.');
+    }
+
+    const reabierto = op.estado === 'FINALIZADO';
+    if (reabierto) {
+      hoja.getRange(op.fila, 6).setValue('ACTIVO');
+      SpreadsheetApp.flush();
+    }
+
+    return {
+      ok: true,
+      idOperacion: op.idOperacion,
+      pedido: op.pedido,
+      cliente: op.cliente,
+      usuarioCreador: op.usuario,
+      usuario: usuario,
+      estado: 'ACTIVO',
+      reabierto: reabierto
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
